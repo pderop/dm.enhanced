@@ -81,7 +81,7 @@ import java.lang.annotation.Target;
  *     void method2();
  * }
  * 
- * &#64;Component(adapteeService = AdapteeService.class)
+ * &#64;Component
  * &#64;Property(name="p1", value="v1")
  * class Adaptee implements AdapteeService {
  *     ...

@@ -83,7 +83,7 @@ import java.lang.annotation.Target;
  *  } 
  *
  *  &#47;**
- *    * This class will instantiate some X component instances
+ *    * This class will instantiate some Hello component instances
  *    *&#47;
  *  &#64;Component 
  *  class HelloFactory {
