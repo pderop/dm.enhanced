@@ -317,8 +317,11 @@ so, the new signatures for the updated callbacks are now the following (for both
  * updated(Property interfaces ...)
  * updated(Dictionary cnf, Property interfaces ...)
  * updated(Component comp, Dictionary cnf, Property interfaces ...)
+
 So, maybe it would make sense to also add the two following signatures:
+
 * updated(Map cnf, Property interfaces ...)
 * updated(Component comp, Map cnf, Property interfaces ...)
+
 
 [oldAnnotApi]: http://repo1.maven.org/maven2/org/apache/felix/org.apache.felix.dependencymanager.annotation/4.2.1/org.apache.felix.dependencymanager.annotation-4.2.1.jar
