@@ -9,7 +9,6 @@ $ export GRADLE_OPTS="-Dhttp.proxyHost=<your proxy ip> -Dhttp.proxyPort=<your pr
 ```
 then type:
 ```sh
-$ cd dependencymanager
 $ gradlew gradlew org.apache.felix.dependencymanager.annotation:jar
 $ gradlew gradlew org.apache.felix.dependencymanager.annotation5:jar
 $ gradlew jar
@@ -306,23 +305,20 @@ so, the new signatures for the updated callbacks are now the following (for both
 - fixed a nasty deadlock when using latest DM r11 and latest SCR 2.0.12 in the same JVM (see FELIX-5716)
 
 # TODO
-
-- Create BundleComponent, ResourceComponent interfaces, like we did for Aspects, AdapterService, and FactoryConfigurationAdapterService.
-- Open question: the dependency annotations have been extremely simplified and enhanced with user defined property types. ok, but they are not backward compatible (old stuff have been removed, like attributes or annotations related to metatypes, the FactoryConfigurationAdapterService has been removed and merged with @Component annotation, etc ...). So, currently, the new annotation api version is provided by the org.apache.felix.dependencymanager5 module, and old annotations are still preserved in org.apache.felix.dependencymanager.annotation module. I wonder if it makes sense to preserve the old version, and I am tempted to simply not preserve the old api and replace it by the new one; and if users need to old version, then they can simply use the previous 4.2.1 from 
+1. Create a BundleComponent which extends the Component interaface (like it was done for Aspects/Adapters
+2. Same for ResourceComponent
+3. Open question: the dependency annotations have been extremely simplified and enhanced with user defined property types. ok, but they are not backward compatible (old stuff have been removed, like attributes or annotations related to metatypes, the FactoryConfigurationAdapterService has been removed and merged with @Component annotation, etc ...). So, currently, the new annotation api version is provided by the org.apache.felix.dependencymanager5 module, and old annotations are still preserved in org.apache.felix.dependencymanager.annotation module. I wonder if it makes sense to preserve the old version, and I am tempted to simply not preserve the old api and replace it by the new one; and if users need to old version, then they can simply use the previous 4.2.1 from 
  [old dm annotation api][oldAnnotApi]. Notice that the dm runtime is compatible with old and new annotations version, so you can use latest dm annotation runtime and old annotation api.
-- The ConfigurationDependency and Factory component updated method currently supports the following method signatures:
-* updated(Dictionary cnf)
-* updated(Component comp, Dictionary cnf)
-* updated(Component comp, Property interfaces ...)
-* updated(Property interfaces ...)
-* updated(Dictionary cnf, Property interfaces ...)
-* updated(Component comp, Dictionary cnf, Property interfaces ...)
 
-so, maybe it would make sense to also add the two following signatures:
+4. The ConfigurationDependency and Factory component updated method currently supports the following method signatures:
+ * updated(Dictionary cnf)
+ * updated(Component comp, Dictionary cnf)
+ * updated(Component comp, Property interfaces ...)
+ * updated(Property interfaces ...)
+ * updated(Dictionary cnf, Property interfaces ...)
+ * updated(Component comp, Dictionary cnf, Property interfaces ...)
+So, maybe it would make sense to also add the two following signatures:
 * updated(Map cnf, Property interfaces ...)
 * updated(Component comp, Map cnf, Property interfaces ...)
-
-
-
 
 [oldAnnotApi]: http://repo1.maven.org/maven2/org/apache/felix/org.apache.felix.dependencymanager.annotation/4.2.1/org.apache.felix.dependencymanager.annotation-4.2.1.jar
