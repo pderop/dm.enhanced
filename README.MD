@@ -305,8 +305,8 @@ so, the new signatures for the updated callbacks are now the following (for both
 - fixed a nasty deadlock when using latest DM r11 and latest SCR 2.0.12 in the same JVM (see FELIX-5716)
 
 # TODO
-1. Create a BundleComponent which extends the Component interaface (like it was done for Aspects/Adapters
-2. Same for ResourceComponent
+1. Create a BundleComponent for old BundleAdapter. The BundleComponent interface will extend the Component interaface (like it was done for Aspects/Adapters).
+2. Do the same for the ResourceAdapter.
 3. Open question: the dependency annotations have been extremely simplified and enhanced with user defined property types. ok, but they are not backward compatible (old stuff have been removed, like attributes or annotations related to metatypes, the FactoryConfigurationAdapterService has been removed and merged with @Component annotation, etc ...). So, currently, the new annotation api version is provided by the org.apache.felix.dependencymanager5 module, and old annotations are still preserved in org.apache.felix.dependencymanager.annotation module. I wonder if it makes sense to preserve the old version, and I am tempted to simply not preserve the old api and replace it by the new one; and if users need to old version, then they can simply use the previous 4.2.1 from 
  [old dm annotation api][oldAnnotApi]. Notice that the dm runtime is compatible with old and new annotations version, so you can use latest dm annotation runtime and old annotation api.
 
