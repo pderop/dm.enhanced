@@ -258,7 +258,7 @@ So, now, an adapter component can be defined like this:
 
 ```java
 Component adapter = createAdapterComponent()
-   .setAdaptee(Adaptee.class, 10)
+   .setAdaptee(Adaptee.class, "(foo=bar)")
    .setAdapteeCallbacks("setAdaptee", "changeAdaptee", null, null)
    .setImplementation(AdapterImpl.class)
    .setInterface(AdapterService.class, null)
