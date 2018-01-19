@@ -53,7 +53,7 @@ package org.apache.felix.dm;
  * }
  * 
  * public class HelloServlet extends HttpServlet {
- *     volatile HelloService adatpee;
+ *     volatile HelloService adatpee; // injected
  *     
  *     void doGet(HttpServletRequest req, HttpServletResponse resp) {
  *         ...

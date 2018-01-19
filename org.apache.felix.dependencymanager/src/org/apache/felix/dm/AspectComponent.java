@@ -32,7 +32,7 @@ package org.apache.felix.dm;
  * }
  * 
  * class DatabaseCache implements Database {
- *     volatile Database originalDatabase;
+ *     volatile Database originalDatabase; // injected
  *     
  *     String get(String key) {
  *         String value = cache.get(key);

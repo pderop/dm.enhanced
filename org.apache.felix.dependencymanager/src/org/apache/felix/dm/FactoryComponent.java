@@ -62,8 +62,8 @@ public interface FactoryComponent extends Component<FactoryComponent> {
 
     /**
      * Sets the pid matching the factory configuration using the specified class.
-     * The FQDN of the specified class will be used as the class name.
-     * @param factoryPid the pid matching the factory configuration
+     * The FQDN of the specified class will be used as the factory pid.
+     * @param clazz the class whose FQDN name will be used for the factory pid
      */
     FactoryComponent setFactoryPid(Class<?> clazz);
 
@@ -92,26 +92,27 @@ public interface FactoryComponent extends Component<FactoryComponent> {
    /**
      * Sets the configuration type to use instead of a dictionary. The updated callback is assumed to take
      * as arguments the specified configuration types in the same order they are provided in this method. 
+     * Optionally, the callback may define a Dictionary as the first argument, in order to also get the raw configuration.
      * @param configTypes the configuration type to use instead of a dictionary
      * @see ConfigurationDependency
      */
     FactoryComponent setConfigType(Class<?> ... configTypes);
 
     /**
-     * Sets the label used to display the tab name (or section) where the properties are displayed. 
+     * Sets the metatype label used to display the tab name (or section) where the properties are displayed. 
      * Example: "Printer Service"
      * @param heading the label used to display the tab name (or section) where the properties are displayed.
      */
     FactoryComponent setHeading(String heading);
 
     /**
-     * A human readable description of the factory PID this configuration is associated with.
+     * A metatype human readable description of the factory PID this configuration is associated with.
      * @param desc
      */
     FactoryComponent setDesc(String desc);
 
     /**
-     * Points to the basename of the Properties file that can localize the Meta Type informations.
+     * Points to the metatype basename of the Properties file that can localize the Meta Type informations.
      * The default localization base name for the properties is OSGI-INF/l10n/bundle, but can
      * be overridden by the manifest Bundle-Localization header (see core specification, in section Localization 
      * on page 68). You can specify a specific localization basename file using this parameter 
@@ -121,7 +122,7 @@ public interface FactoryComponent extends Component<FactoryComponent> {
     FactoryComponent setLocalization(String localization);
         
     /**
-     * Sets MetaData regarding configuration properties.
+     * Sets metatype MetaData regarding configuration properties.
      * @param metaData the metadata regarding configuration properties 
      */
     FactoryComponent add(PropertyMetaData ... metaData) ;
