@@ -130,6 +130,44 @@ public abstract class DependencyActivatorBase extends DependencyActivatorBaseCom
     }
     
     /**
+     * Creates a new bundle adapter component.
+     * 
+     * @return the bundle adapter component
+     */
+    public BundleComponent createBundleComponent() {
+        return m_manager.createBundleComponent();
+    }
+    
+    /**
+     * Creates a new aspect component.
+     * 
+     * @return the aspect component
+     * @see DependencyManager#createAspectComponent(Consumer)
+     */
+    public AspectComponent createAspectComponent() {
+        return m_manager.createAspectComponent();
+    }
+
+    /**
+     * Creates a new adapter service.
+     * 
+     * @return the adapter service
+     * @see DependencyManager#createAdapterService(Class, String)
+     */
+    public AdapterComponent createAdapterComponent() {
+        return m_manager.createAdapterComponent();
+    }
+
+    /**
+     * Creates a new factory configuration component.
+     * @return the factory configuration component
+     * @see DependencyManager#createFactoryComponent(java.util.function.Consumer)
+     */
+    public FactoryComponent createFactoryComponent() {
+        return m_manager.createFactoryComponent();
+    }
+
+    /**
      * Creates a new service dependency.
      * 
      * @return the service dependency
@@ -184,26 +222,6 @@ public abstract class DependencyActivatorBase extends DependencyActivatorBaseCom
         return m_manager.createResourceDependency();
     }
 
-    /**
-     * Creates a new aspect component.
-     * 
-     * @return the aspect component
-     * @see DependencyManager#createAspectComponent(Consumer)
-     */
-    public AspectComponent createAspectComponent() {
-        return m_manager.createAspectComponent();
-    }
-
-    /**
-     * Creates a new adapter service.
-     * 
-     * @return the adapter service
-     * @see DependencyManager#createAdapterService(Class, String)
-     */
-    public AdapterComponent createAdapterComponent() {
-        return m_manager.createAdapterComponent();
-    }
-
    /**
      * Creates a new resource adapter service.
      * 
@@ -239,32 +257,5 @@ public abstract class DependencyActivatorBase extends DependencyActivatorBaseCom
     public Component createResourceAdapter(String resourceFilter, Object propagateCallbackInstance, String propagateCallbackMethod, Object callbackInstance, String callbackSet, String callbackChanged) {
         return m_manager.createResourceAdapterService(resourceFilter, propagateCallbackInstance, propagateCallbackMethod, callbackInstance, callbackSet, callbackChanged);
     }
-    
-    /**
-     * Creates a new bundle adapter service.
-     * 
-     * @return the bundle adapter service
-     */
-    public Component createBundleAdapterService(int bundleStateMask, String bundleFilter, boolean propagate) {
-        return m_manager.createBundleAdapterService(bundleStateMask, bundleFilter, propagate);
-    }
 
-    /**
-     * Creates a new bundle adapter service, using a specific callback instance
-     * 
-     * @return the bundle adapter service
-     */
-    public Component createBundleAdapterService(int bundleStateMask, String bundleFilter, boolean propagate,
-    		Object callbackInstance, String add, String change, String remove) {
-        return m_manager.createBundleAdapterService(bundleStateMask, bundleFilter, propagate, callbackInstance, add, change, remove);
-    }
-
-    /**
-     * Creates a new factory configuration component.
-     * @return the factory configuration component
-     * @see DependencyManager#createFactoryComponent(java.util.function.Consumer)
-     */
-    public FactoryComponent createFactoryComponent() {
-        return m_manager.createFactoryComponent();
-    }
 }

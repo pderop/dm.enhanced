@@ -156,7 +156,7 @@ public class DependencyManager extends DependencyManagerCompat {
      * 
      * @return the new component
      */
-    public Component createComponent() {
+    public Component<?> createComponent() {
         return new ComponentImpl(m_context, this, m_logger);
     }
 
@@ -262,30 +262,11 @@ public class DependencyManager extends DependencyManagerCompat {
      * @param propagate <code>true</code> if properties from the bundle should be propagated to the service
      * @return a service that acts as a factory for generating bundle adapters
      */
-    public Component createBundleAdapterService(int bundleStateMask, String bundleFilter, boolean propagate) {
-        return new BundleAdapterImpl(this, bundleStateMask, bundleFilter, propagate);
+    public BundleComponent createBundleComponent() {
+        return new BundleAdapterImpl(this);
     }
 
     /**
-     * Creates a new bundle adapter using specific callback instance. 
-     * The adapter will be applied to any bundle that matches the specified bundle state mask and filter condition. 
-     * For each matching bundle an adapter will be created based on the adapter implementation class, and
-     * The adapter will be registered with the specified interface.
-     * 
-     * @param bundleStateMask the bundle state mask to apply
-     * @param bundleFilter the filter to apply to the bundle manifest
-     * @param propagate <code>true</code> if properties from the bundle should be propagated to the service
-     * @param callbackInstance the instance to invoke the callbacks on, or null if the callbacks have to be invoked on the adapter itself
-     * @param add name of the callback method to invoke on add
-     * @param change name of the callback method to invoke on change
-     * @param remove name of the callback method to invoke on remove
-     * @return a service that acts as a factory for generating bundle adapters
-     */
-    public Component createBundleAdapterService(int bundleStateMask, String bundleFilter, boolean propagate,
-    		Object callbackInstance, String add, String change, String remove) {
-        return new BundleAdapterImpl(this, bundleStateMask, bundleFilter, propagate, callbackInstance, add, change, remove);
-    }
-
     /**
      * Creates a new resource adapter. The adapter will be applied to any resource that
      * matches the specified filter condition. For each matching resource

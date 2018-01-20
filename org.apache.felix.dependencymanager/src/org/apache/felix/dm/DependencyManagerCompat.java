@@ -1,5 +1,7 @@
 package org.apache.felix.dm;
 
+import org.apache.felix.dm.impl.BundleAdapterImpl;
+
 public abstract class DependencyManagerCompat {
 
     /**
@@ -74,6 +76,35 @@ public abstract class DependencyManagerCompat {
      * @return a service that acts as a factory for generating the managed service factory configuration adapter
      */    
     public abstract FactoryComponent createFactoryComponent();
+    
+    /**
+     * Creates a new bundle adapter. The adapter will be applied to any bundle that
+     * matches the specified bundle state mask and filter condition. For each matching
+     * bundle an adapter will be created based on the adapter implementation class.
+     * The adapter will be registered with the specified interface
+     * 
+     * TODO and existing properties from the original resource plus any extra properties you supply here.
+     * It will also inherit all dependencies, and if you declare the original
+     * service as a member it will be injected.
+     * 
+     * <p>Usage example:
+     * 
+     * <blockquote><pre>
+     *  manager.createBundleAdapterService(Bundle.INSTALLED | Bundle.RESOLVED | Bundle.ACTIVE, 
+     *                                     "(Bundle-SymbolicName=org.apache.felix.dependencymanager)",
+     *                                     true)
+     *         // The interface to use when registering adapter
+     *         .setInterface(AdapterService.class.getName(), new Hashtable() {{ put("foo", "bar"); }})
+     *         // the implementation of the adapter
+     *         .setImplementation(AdapterServiceImpl.class);
+     * </pre></blockquote>
+     * 
+     * @param bundleStateMask the bundle state mask to apply
+     * @param bundleFilter the filter to apply to the bundle manifest
+     * @param propagate <code>true</code> if properties from the bundle should be propagated to the service
+     * @return a service that acts as a factory for generating bundle adapters
+     */
+    public abstract BundleComponent createBundleComponent();
 
     /**
      * Creates a new aspect. The aspect will be applied to any service that
@@ -586,5 +617,48 @@ public abstract class DependencyManagerCompat {
             .setLocalization(localization)
             .add(propertiesMetaData);
     }
+    
+    /**
+     * Creates a new bundle adapter. The adapter will be applied to any bundle that
+     * matches the specified bundle state mask and filter condition. For each matching
+     * bundle an adapter will be created based on the adapter implementation class.
+     * The adapter will be registered with the specified interface
+     * 
+     * @param bundleStateMask the bundle state mask to apply
+     * @param bundleFilter the filter to apply to the bundle manifest
+     * @param propagate <code>true</code> if properties from the bundle should be propagated to the service
+     * @return a service that acts as a factory for generating bundle adapters
+     * @deprecated use {@link #createBundleComponent()}
+     */
+    public Component createBundleAdapterService(int bundleStateMask, String bundleFilter, boolean propagate) {
+        return createBundleComponent()
+        		.setBundleFilter(bundleStateMask, bundleFilter)
+        		.setPropagate(propagate);        		
+    }
+
+   /**
+    * Creates a new bundle adapter using specific callback instance. 
+    * The adapter will be applied to any bundle that matches the specified bundle state mask and filter condition. 
+    * For each matching bundle an adapter will be created based on the adapter implementation class, and
+    * The adapter will be registered with the specified interface.
+    * 
+    * @param bundleStateMask the bundle state mask to apply
+    * @param bundleFilter the filter to apply to the bundle manifest
+    * @param propagate <code>true</code> if properties from the bundle should be propagated to the service
+    * @param callbackInstance the instance to invoke the callbacks on, or null if the callbacks have to be invoked on the adapter itself
+    * @param add name of the callback method to invoke on add
+    * @param change name of the callback method to invoke on change
+    * @param remove name of the callback method to invoke on remove
+    * @return a service that acts as a factory for generating bundle adapters
+    * @deprecated use {@link #createBundleComponent()}
+    */
+   public Component createBundleAdapterService(int bundleStateMask, String bundleFilter, boolean propagate,
+   		Object callbackInstance, String add, String change, String remove) {
+       return createBundleComponent()
+       		.setBundleFilter(bundleStateMask,  bundleFilter)
+       		.setPropagate(propagate)
+       		.setBundleCallbacks(add, change, remove)
+       		.setBundleCallbackInstance(callbackInstance);
+   }
 
 }

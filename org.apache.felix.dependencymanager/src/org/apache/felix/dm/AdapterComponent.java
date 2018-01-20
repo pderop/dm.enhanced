@@ -119,7 +119,7 @@ public interface AdapterComponent extends Component<AdapterComponent> {
 	AdapterComponent setAdapteeField(String autoConfig);
     
     /**
-     * Sets the callbacks to invoke when injecting the adaptee server into the adapter component.
+     * Sets the callbacks to invoke when injecting the adaptee service into the adapter component.
      * @param add name of the callback method to invoke on add
      * @param change name of the callback method to invoke on change
      * @param remove name of the callback method to invoke on remove

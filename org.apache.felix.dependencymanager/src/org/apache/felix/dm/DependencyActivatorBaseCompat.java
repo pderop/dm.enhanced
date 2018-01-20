@@ -179,4 +179,23 @@ public abstract class DependencyActivatorBaseCompat {
         return m_manager.createAdapterFactoryConfigurationService(factoryPid, update, propagate, heading, desc, localization, propertiesMetaData);
     }
 
+    /**
+     * Creates a new bundle adapter service.
+     * 
+     * @return the bundle adapter service
+     */
+    public Component createBundleAdapterService(int bundleStateMask, String bundleFilter, boolean propagate) {
+        return m_manager.createBundleAdapterService(bundleStateMask, bundleFilter, propagate);
+    }
+
+    /**
+     * Creates a new bundle adapter service, using a specific callback instance
+     * 
+     * @return the bundle adapter service
+     */
+    public Component createBundleAdapterService(int bundleStateMask, String bundleFilter, boolean propagate,
+    		Object callbackInstance, String add, String change, String remove) {
+        return m_manager.createBundleAdapterService(bundleStateMask, bundleFilter, propagate, callbackInstance, add, change, remove);
+    }
+    
 }
