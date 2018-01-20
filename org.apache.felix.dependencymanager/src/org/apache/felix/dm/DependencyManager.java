@@ -267,8 +267,7 @@ public class DependencyManager extends DependencyManagerCompat {
     }
 
     /**
-    /**
-     * Creates a new resource adapter. The adapter will be applied to any resource that
+     * Creates a new resource adapter component. The adapter will be applied to any resource that
      * matches the specified filter condition. For each matching resource
      * an adapter will be created based on the adapter implementation class.
      * The adapter will be registered with the specified interface and existing properties
@@ -276,51 +275,12 @@ public class DependencyManager extends DependencyManagerCompat {
      * It will also inherit all dependencies, and if you declare the original
      * service as a member it will be injected.
      * 
-     * <p>Usage example:
-     * 
-     * <blockquote><pre>
-     *  manager.createResourceAdapterService("(&(path=/test)(repository=TestRepository))", true)
-     *         // The interface to use when registering adapter
-     *         .setInterface(AdapterService.class.getName(), new Hashtable() {{ put("foo", "bar"); }})
-     *         // the implementation of the adapter
-     *         .setImplementation(AdapterServiceImpl.class);
-     * </pre></blockquote>
-     *
-     * @param resourceFilter the filter condition to use with the resource
-     * @param propagate <code>true</code> if properties from the resource should be propagated to the service
-     * @param callbackInstance instance to invoke the callback on
-     * @param callbackChanged the name of the callback method
-     * @return a service that acts as a factory for generating resource adapters
+     * @return a Resource Adapter Component
      */
-    public Component createResourceAdapterService(String resourceFilter, boolean propagate, Object callbackInstance,
-        String callbackChanged)
-    {
-        return new ResourceAdapterImpl(this, resourceFilter, propagate, callbackInstance, null, callbackChanged);
+    public ResourceComponent createResourceComponent() {
+    	return new ResourceAdapterImpl(this);
     }
-
-    /** @see DependencyManager#createResourceAdapterService(String, boolean, Object, String) */
-    public Component createResourceAdapterService(String resourceFilter, boolean propagate, Object callbackInstance,
-        String callbackSet, String callbackChanged)
-    {
-        return new ResourceAdapterImpl(this, resourceFilter, propagate, callbackInstance, callbackSet, callbackChanged);
-    }
-
-    /** @see DependencyManager#createResourceAdapterService(String, boolean, Object, String) */
-    public Component createResourceAdapterService(String resourceFilter, Object propagateCallbackInstance,
-        String propagateCallbackMethod, Object callbackInstance, String callbackChanged)
-    {
-        return new ResourceAdapterImpl(this, resourceFilter, propagateCallbackInstance, propagateCallbackMethod,
-            callbackInstance, null, callbackChanged);
-    }
-
-    /** @see DependencyManager#createResourceAdapterService(String, boolean, Object, String) */
-    public Component createResourceAdapterService(String resourceFilter, Object propagateCallbackInstance,
-        String propagateCallbackMethod, Object callbackInstance, String callbackSet, String callbackChanged)
-    {
-        return new ResourceAdapterImpl(this, resourceFilter, propagateCallbackInstance, propagateCallbackMethod,
-            callbackInstance, callbackSet, callbackChanged);
-    }
-
+    
     /**
      * Returns a list of components.
      * 

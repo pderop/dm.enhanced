@@ -12,7 +12,7 @@ public abstract class DependencyActivatorBaseCompat {
      * 
      * @return the aspect service
      * @see DependencyManager#createAspectService(Class, String, int, String)
-     * @deprecated use {@link #createAspectComponent()}
+     * @deprecated use {@link DependencyActivatorBase#createAspectComponent()}
      */
     public Component createAspectService(Class<?> serviceInterface, String serviceFilter, int ranking, String attributeName) {
         return m_manager.createAspectService(serviceInterface, serviceFilter, ranking, attributeName);
@@ -23,7 +23,7 @@ public abstract class DependencyActivatorBaseCompat {
      * 
      * @return the aspect service
      * @see DependencyManager#createAspectService(Class, String, int)
-     * @deprecated use {@link #createAspectComponent()}
+     * @deprecated use {@link DependencyActivatorBase#createAspectComponent()}
      */
     public Component createAspectService(Class<?> serviceInterface, String serviceFilter, int ranking) {
         return m_manager.createAspectService(serviceInterface, serviceFilter, ranking);
@@ -34,7 +34,7 @@ public abstract class DependencyActivatorBaseCompat {
      * 
      * @return the aspect service
      * @see DependencyManager#createAspectService(Class, String, int, String, String, String)
-     * @deprecated use {@link #createAspectComponent()}
+     * @deprecated use {@link DependencyActivatorBase#createAspectComponent()}
      */
     public Component createAspectService(Class<?> serviceInterface, String serviceFilter, int ranking, String add, String change, String remove) {
         return m_manager.createAspectService(serviceInterface, serviceFilter, ranking, add, change, remove);
@@ -45,7 +45,7 @@ public abstract class DependencyActivatorBaseCompat {
      * 
      * @return the aspect service
      * @see DependencyManager#createAspectService(Class, String, int, String, String, String, String)
-     * @deprecated use {@link #createAspectComponent()}
+     * @deprecated use {@link DependencyActivatorBase#createAspectComponent()}
      */
     public Component createAspectService(Class<?> serviceInterface, String serviceFilter, int ranking, String add, String change, String remove, String swap) {    
         return m_manager.createAspectService(serviceInterface, serviceFilter, ranking, add, change, remove, swap);
@@ -56,7 +56,7 @@ public abstract class DependencyActivatorBaseCompat {
      * 
      * @return the aspect service
      * @see DependencyManager#createAspectService(Class, String, int, Object, String, String, String, String)
-     * @deprecated use {@link #createAspectComponent()}
+     * @deprecated use {@link DependencyActivatorBase#createAspectComponent()}
      */
     public Component createAspectService(Class<?> serviceInterface, String serviceFilter, int ranking, Object callbackInstance, String add, String change, String remove, String swap) {    
         return m_manager.createAspectService(serviceInterface, serviceFilter, ranking, callbackInstance, add, change, remove, swap);
@@ -67,7 +67,7 @@ public abstract class DependencyActivatorBaseCompat {
      * 
      * @return the adapter service
      * @see DependencyManager#createAdapterService(Class, String)
-     * @deprecated use {@link #createAdapterComponent()}
+     * @deprecated use {@link DependencyActivatorBase#createAdapterComponent()}
      */
     public Component createAdapterService(Class<?> serviceInterface, String serviceFilter) {
         return m_manager.createAdapterService(serviceInterface, serviceFilter);
@@ -78,7 +78,7 @@ public abstract class DependencyActivatorBaseCompat {
      * 
      * @return the adapter service
      * @see DependencyManager#createAdapterService(Class, String, String)
-     * @deprecated use {@link #createAdapterComponent()}
+     * @deprecated use {@link DependencyActivatorBase#createAdapterComponent()}
      */
     public Component createAdapterService(Class<?> serviceInterface, String serviceFilter, String autoConfig) {
         return m_manager.createAdapterService(serviceInterface, serviceFilter, autoConfig);
@@ -89,7 +89,7 @@ public abstract class DependencyActivatorBaseCompat {
      * 
      * @return the adapter service
      * @see DependencyManager#createAdapterService(Class, String, String, String, String)
-     * @deprecated use {@link #createAdapterComponent()}
+     * @deprecated use {@link DependencyActivatorBase#createAdapterComponent()}
      */
     public Component createAdapterService(Class<?> serviceInterface, String serviceFilter, String add, String change, String remove) {
         return m_manager.createAdapterService(serviceInterface, serviceFilter, add, change, remove);
@@ -99,7 +99,7 @@ public abstract class DependencyActivatorBaseCompat {
      * Creates a new adapter service.
      * @return the adapter service
      * @see DependencyManager#createAdapterService(Class, String, String, String, String, String)
-     * @deprecated use {@link #createAdapterComponent()}
+     * @deprecated use {@link DependencyActivatorBase#createAdapterComponent()}
      */
     public Component createAdapterService(Class<?> serviceInterface, String serviceFilter, String add, String change, String remove, String swap) {
         return m_manager.createAdapterService(serviceInterface, serviceFilter, add, change, remove, swap);
@@ -109,7 +109,7 @@ public abstract class DependencyActivatorBaseCompat {
      * Creates a new adapter service.
      * @return the adapter service
      * @see DependencyManager#createAdapterService(Class, String, String, Object, String, String, String, String, boolean)
-     * @deprecated use {@link #createAdapterComponent()}
+     * @deprecated use {@link DependencyActivatorBase#createAdapterComponent()}
      */
     public Component createAdapterService(Class<?> serviceInterface, String serviceFilter, 
         String autoConfig, Object callbackInstance, String add, String change, String remove, String swap) {
@@ -120,7 +120,7 @@ public abstract class DependencyActivatorBaseCompat {
      * Creates a new adapter service.
      * @return the adapter service
      * @see DependencyManager#createAdapterService(Class, String, String, Object, String, String, String, String, boolean)
-     * @deprecated use {@link #createAdapterComponent()}
+     * @deprecated use {@link DependencyActivatorBase#createAdapterComponent()}
      */
     public Component createAdapterService(Class<?> serviceInterface, String serviceFilter, 
         String autoConfig, Object callbackInstance, String add, String change, String remove, String swap, boolean propagate) {
@@ -131,7 +131,7 @@ public abstract class DependencyActivatorBaseCompat {
      * Creates a new factory configuration adapter service.
      * 
      * @return the factory configuration adapter service
-     * @deprecated use {@link #createFactoryComponent()}
+     * @deprecated use {@link DependencyActivatorBase#createFactoryComponent()}
      */
     public Component createFactoryConfigurationAdapterService(String factoryPid, String update, boolean propagate) {
         return m_manager.createFactoryConfigurationAdapterService(factoryPid, update, propagate);
@@ -141,7 +141,7 @@ public abstract class DependencyActivatorBaseCompat {
      * Creates a new factory configuration adapter service, using a specific callback instance
      * 
      * @return the factory configuration adapter service
-     * @deprecated use {@link #createFactoryComponent()}
+     * @deprecated use {@link DependencyActivatorBase#createFactoryComponent()}
      */
     public Component createFactoryConfigurationAdapterService(String factoryPid, String update, boolean propagate, Object callbackInstance) {
         return m_manager.createFactoryConfigurationAdapterService(factoryPid, update, propagate, callbackInstance);
@@ -152,7 +152,7 @@ public abstract class DependencyActivatorBaseCompat {
      * 
      * @return the factory configuration adapter service
      * @see DependencyManager#createFactoryConfigurationAdapterService(String, String, boolean, Class)
-     * @deprecated use {@link #createFactoryComponent()}
+     * @deprecated use {@link DependencyActivatorBase#createFactoryComponent()}
      */
     public Component createFactoryConfigurationAdapterService(String factoryPid, String update, boolean propagate, Class<?> configType) {
         return m_manager.createFactoryConfigurationAdapterService(factoryPid, update, propagate, configType);
@@ -163,7 +163,7 @@ public abstract class DependencyActivatorBaseCompat {
      * 
      * @return the factory configuration adapter service
      * @see DependencyManager#createFactoryConfigurationAdapterService(String, String, boolean, Object, Class)
-     * @deprecated use {@link #createFactoryComponent()}
+     * @deprecated use {@link DependencyActivatorBase#createFactoryComponent()}
      */
     public Component createFactoryConfigurationAdapterService(String factoryPid, String update, boolean propagate, Object callbackInstance, Class<?> configType) {
         return m_manager.createFactoryConfigurationAdapterService(factoryPid, update, propagate, callbackInstance, configType);
@@ -173,7 +173,7 @@ public abstract class DependencyActivatorBaseCompat {
      * Creates a new factory configuration adapter service.
      * 
      * @return the factory configuration adapter service
-     * @deprecated use {@link #createFactoryComponent()}
+     * @deprecated use {@link DependencyActivatorBase#createFactoryComponent()}
      */
     public Component createFactoryConfigurationAdapterService(String factoryPid, String update, boolean propagate, String heading, String desc, String localization, PropertyMetaData[] propertiesMetaData) {
         return m_manager.createAdapterFactoryConfigurationService(factoryPid, update, propagate, heading, desc, localization, propertiesMetaData);
@@ -198,4 +198,44 @@ public abstract class DependencyActivatorBaseCompat {
         return m_manager.createBundleAdapterService(bundleStateMask, bundleFilter, propagate, callbackInstance, add, change, remove);
     }
     
+    /**
+     * Creates a new resource adapter service.
+     * 
+     * @return the resource adapter service
+     * @deprecated use {@link DependencyActivatorBase#createResourceComponent()}
+     */
+    public Component createResourceAdapter(String resourceFilter, boolean propagate, Object callbackInstance, String callbackChanged) {
+        return m_manager.createResourceAdapterService(resourceFilter, propagate, callbackInstance, callbackChanged);
+    }
+
+    /**
+     * Creates a new resource adapter service.
+     * 
+     * @return the resource adapter service
+     * @deprecated use {@link DependencyActivatorBase#createResourceComponent()}
+     */
+    public Component createResourceAdapter(String resourceFilter, boolean propagate, Object callbackInstance, String callbackSet, String callbackChanged) {
+        return m_manager.createResourceAdapterService(resourceFilter, propagate, callbackInstance, callbackSet, callbackChanged);
+    }
+    
+    /**
+     * Creates a new resource adapter service.
+     * 
+     * @return the resource adapter service
+     * @deprecated use {@link DependencyActivatorBase#createResourceComponent()}
+     */
+    public Component createResourceAdapter(String resourceFilter, Object propagateCallbackInstance, String propagateCallbackMethod, Object callbackInstance, String callbackChanged) {
+        return m_manager.createResourceAdapterService(resourceFilter, propagateCallbackInstance, propagateCallbackMethod, callbackInstance, null, callbackChanged);
+    }
+    
+    /**
+     * Creates a new resource adapter service.
+     * 
+     * @return the resource adapter service
+     * @deprecated use {@link DependencyActivatorBase#createResourceComponent()}
+     */
+    public Component createResourceAdapter(String resourceFilter, Object propagateCallbackInstance, String propagateCallbackMethod, Object callbackInstance, String callbackSet, String callbackChanged) {
+        return m_manager.createResourceAdapterService(resourceFilter, propagateCallbackInstance, propagateCallbackMethod, callbackInstance, callbackSet, callbackChanged);
+    }
+
 }

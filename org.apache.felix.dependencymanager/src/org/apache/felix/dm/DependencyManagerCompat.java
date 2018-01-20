@@ -1,6 +1,7 @@
 package org.apache.felix.dm;
 
 import org.apache.felix.dm.impl.BundleAdapterImpl;
+import org.apache.felix.dm.impl.ResourceAdapterImpl;
 
 public abstract class DependencyManagerCompat {
 
@@ -107,6 +108,19 @@ public abstract class DependencyManagerCompat {
     public abstract BundleComponent createBundleComponent();
 
     /**
+     * Creates a new resource adapter component. The adapter will be applied to any resource that
+     * matches the specified filter condition. For each matching resource
+     * an adapter will be created based on the adapter implementation class.
+     * The adapter will be registered with the specified interface and existing properties
+     * from the original resource plus any extra properties you supply here.
+     * It will also inherit all dependencies, and if you declare the original
+     * service as a member it will be injected.
+     * 
+     * @return a Resource Adapter Component
+     */
+    public abstract ResourceComponent createResourceComponent();
+
+    /**
      * Creates a new aspect. The aspect will be applied to any service that
      * matches the specified interface and filter. For each matching service
      * an aspect will be created based on the aspect implementation class.
@@ -129,7 +143,7 @@ public abstract class DependencyManagerCompat {
      * @param autoConfig the aspect implementation field name where to inject original service. 
      *     If null, any field matching the original service will be injected.
      * @return a service that acts as a factory for generating aspects
-     * @deprecated use {@link #createAspectComponent()}
+     * @deprecated use {@link DependencyManager#createAspectComponent()}
      */
     public Component createAspectService(Class<?> serviceInterface, String serviceFilter, int ranking, String autoConfig) {
         return createAspectComponent()
@@ -158,7 +172,7 @@ public abstract class DependencyManagerCompat {
      * @param serviceFilter the filter condition to use with the service interface
      * @param ranking the level used to organize the aspect chain ordering
      * @return a service that acts as a factory for generating aspects
-     * @deprecated use {@link #createAspectComponent()}
+     * @deprecated use {@link DependencyManager#createAspectComponent()}
      */
     public Component createAspectService(Class<?> serviceInterface, String serviceFilter, int ranking) {
         return createAspectComponent()
@@ -189,7 +203,7 @@ public abstract class DependencyManagerCompat {
      * @param change name of the callback method to invoke on change
      * @param remove name of the callback method to invoke on remove
      * @return a service that acts as a factory for generating aspects
-     * @deprecated use {@link #createAspectComponent()}
+     * @deprecated use {@link DependencyManager#createAspectComponent()}
      */
     public Component createAspectService(Class<?> serviceInterface, String serviceFilter, int ranking, String add,
         String change, String remove)
@@ -224,7 +238,7 @@ public abstract class DependencyManagerCompat {
      * @param remove name of the callback method to invoke on remove
      * @param swap name of the callback method to invoke on swap
      * @return a service that acts as a factory for generating aspects
-     * @deprecated use {@link #createAspectComponent()}
+     * @deprecated use {@link DependencyManager#createAspectComponent()}
      */
     public Component createAspectService(Class<?> serviceInterface, String serviceFilter, int ranking, String add, String change, String remove, String swap)
     {
@@ -259,7 +273,7 @@ public abstract class DependencyManagerCompat {
      * @param remove name of the callback method to invoke on remove
      * @param swap name of the callback method to invoke on swap
      * @return a service that acts as a factory for generating aspects
-     * @deprecated use {@link #createAspectComponent()}
+     * @deprecated use {@link DependencyManager#createAspectComponent()}
      */
     public Component createAspectService(Class<?> serviceInterface, String serviceFilter, int ranking, Object callbackInstance, 
         String add, String change, String remove, String swap)        
@@ -290,7 +304,7 @@ public abstract class DependencyManagerCompat {
      * @param serviceInterface the service interface to apply the adapter to
      * @param serviceFilter the filter condition to use with the service interface
      * @return a service that acts as a factory for generating adapters
-     * @deprecated use {@link #createAdapterComponent()}
+     * @deprecated use {@link DependencyManager#createAdapterComponent()}
      */
     public Component createAdapterService(Class<?> serviceInterface, String serviceFilter) {
     	return createAdapterComponent().setAdaptee(serviceInterface, serviceFilter);    			
@@ -317,7 +331,7 @@ public abstract class DependencyManagerCompat {
      * @param serviceFilter the filter condition to use with the service interface
      * @param autoConfig the name of the member to inject the service into
      * @return a service that acts as a factory for generating adapters
-     * @deprecated use {@link #createAdapterComponent()}
+     * @deprecated use {@link DependencyManager#createAdapterComponent()}
      */
     public Component createAdapterService(Class<?> serviceInterface, String serviceFilter, String autoConfig) {
     	return createAdapterComponent()
@@ -348,7 +362,7 @@ public abstract class DependencyManagerCompat {
      * @param change name of the callback method to invoke on change
      * @param remove name of the callback method to invoke on remove
      * @return a service that acts as a factory for generating adapters
-     * @deprecated use {@link #createAdapterComponent()}
+     * @deprecated use {@link DependencyManager#createAdapterComponent()}
     */
     public Component createAdapterService(Class<?> serviceInterface, String serviceFilter, String add, String change, String remove) {
         return createAdapterComponent()
@@ -380,7 +394,7 @@ public abstract class DependencyManagerCompat {
      * @param remove name of the callback method to invoke on remove
      * @param swap name of the callback method to invoke on swap
      * @return a service that acts as a factory for generating adapters
-     * @deprecated use {@link #createAdapterComponent()}
+     * @deprecated use {@link DependencyManager#createAdapterComponent()}
      */
     public Component createAdapterService(Class<?> serviceInterface, String serviceFilter, String add, String change, String remove, String swap) {
         return createAdapterComponent()
@@ -415,7 +429,7 @@ public abstract class DependencyManagerCompat {
      * @param swap name of the callback method to invoke on swap
      * @param propagate true if the adaptee service properties should be propagated to the adapter service consumers
      * @return a service that acts as a factory for generating adapters
-     * @deprecated use {@link #createAdapterComponent()}
+     * @deprecated use {@link DependencyManager#createAdapterComponent()}
      */
     public Component createAdapterService(Class<?> serviceInterface, String serviceFilter, String autoConfig, Object callbackInstance, String add, String change, String remove, String swap, boolean propagate) {
         return createAdapterComponent()
@@ -452,7 +466,7 @@ public abstract class DependencyManagerCompat {
      * @param update the adapter method name that will be notified when the factory configuration is created/updated.
      * @param propagate true if public factory configuration should be propagated to the adapter service properties
      * @return a service that acts as a factory for generating the managed service factory configuration adapter
-     * @deprecated use {@link #createFactoryComponent()}
+     * @deprecated use {@link DependencyManager#createFactoryComponent()}
      */
     public Component createFactoryConfigurationAdapterService(String factoryPid, String update, boolean propagate) {
         return createFactoryComponent()
@@ -479,7 +493,7 @@ public abstract class DependencyManagerCompat {
      * @param propagate true if public factory configuration should be propagated to the adapter service properties
      * @param callbackInstance the object on which the updated callback will be invoked.
      * @return a service that acts as a factory for generating the managed service factory configuration adapter
-     * @deprecated use {@link #createFactoryComponent()}
+     * @deprecated use {@link DependencyManager#createFactoryComponent()}
      */
     public Component createFactoryConfigurationAdapterService(String factoryPid, String update, boolean propagate, Object callbackInstance) {
          return createFactoryComponent()
@@ -511,7 +525,7 @@ public abstract class DependencyManagerCompat {
      * more informations about type-safe configuration.
      * @return a service that acts as a factory for generating the managed service factory configuration adapter
      * @see ConfigurationDependency
-     * @deprecated use {@link #createFactoryComponent()}
+     * @deprecated use {@link DependencyManager#createFactoryComponent()}
      */
     public Component createFactoryConfigurationAdapterService(String factoryPid, String update, boolean propagate, Class<?> configType) {
         return createFactoryComponent()
@@ -543,7 +557,7 @@ public abstract class DependencyManagerCompat {
      * @param configTypes the configuration types to use instead of a dictionary.  See the javadoc from {@link ConfigurationDependency} for
      * more informations about type-safe configuration.
      * @return a service that acts as a factory for generating the managed service factory configuration adapter
-     * @deprecated use {@link #createFactoryComponent()}
+     * @deprecated use {@link DependencyManager#createFactoryComponent()}
      */
     public Component createFactoryConfigurationAdapterService(String factoryPid, String update, boolean propagate, Object callbackInstance, Class<?> configType) {
         return createFactoryComponent()
@@ -603,7 +617,7 @@ public abstract class DependencyManagerCompat {
      *        (e.g. <code>"person"</code> will match person_du_NL.properties in the root bundle directory).
      * @param propertiesMetaData Array of MetaData regarding configuration properties
      * @return a service that acts as a factory for generating the managed service factory configuration adapter
-     * @deprecated use {@link #createFactoryComponent()}
+     * @deprecated use {@link DependencyManager#createFactoryComponent()}
      */
     public Component createAdapterFactoryConfigurationService(String factoryPid, String update, boolean propagate,
         String heading, String desc, String localization, PropertyMetaData[] propertiesMetaData)
@@ -628,7 +642,7 @@ public abstract class DependencyManagerCompat {
      * @param bundleFilter the filter to apply to the bundle manifest
      * @param propagate <code>true</code> if properties from the bundle should be propagated to the service
      * @return a service that acts as a factory for generating bundle adapters
-     * @deprecated use {@link #createBundleComponent()}
+     * @deprecated use {@link DependencyManager#createBundleComponent()}
      */
     public Component createBundleAdapterService(int bundleStateMask, String bundleFilter, boolean propagate) {
         return createBundleComponent()
@@ -650,7 +664,7 @@ public abstract class DependencyManagerCompat {
     * @param change name of the callback method to invoke on change
     * @param remove name of the callback method to invoke on remove
     * @return a service that acts as a factory for generating bundle adapters
-    * @deprecated use {@link #createBundleComponent()}
+    * @deprecated use {@link DependencyManager#createBundleComponent()}
     */
    public Component createBundleAdapterService(int bundleStateMask, String bundleFilter, boolean propagate,
    		Object callbackInstance, String add, String change, String remove) {
@@ -659,6 +673,84 @@ public abstract class DependencyManagerCompat {
        		.setPropagate(propagate)
        		.setBundleCallbacks(add, change, remove)
        		.setBundleCallbackInstance(callbackInstance);
+   }
+
+   /**
+    * Creates a new resource adapter. The adapter will be applied to any resource that
+    * matches the specified filter condition. For each matching resource
+    * an adapter will be created based on the adapter implementation class.
+    * The adapter will be registered with the specified interface and existing properties
+    * from the original resource plus any extra properties you supply here.
+    * It will also inherit all dependencies, and if you declare the original
+    * service as a member it will be injected.
+    * 
+    * <p>Usage example:
+    * 
+    * <blockquote><pre>
+    *  manager.createResourceAdapterService("(&(path=/test)(repository=TestRepository))", true)
+    *         // The interface to use when registering adapter
+    *         .setInterface(AdapterService.class.getName(), new Hashtable() {{ put("foo", "bar"); }})
+    *         // the implementation of the adapter
+    *         .setImplementation(AdapterServiceImpl.class);
+    * </pre></blockquote>
+    *
+    * @param resourceFilter the filter condition to use with the resource
+    * @param propagate <code>true</code> if properties from the resource should be propagated to the service
+    * @param callbackInstance instance to invoke the callback on
+    * @param callbackChanged the name of the callback method
+    * @return a service that acts as a factory for generating resource adapters
+    * @deprecated use {@link DependencyManager#createResourceComponent()} 
+    */
+   public Component createResourceAdapterService(String resourceFilter, boolean propagate, Object callbackInstance,
+       String callbackChanged)
+   {
+       return createResourceComponent()
+       		.setResourceFilter(resourceFilter)
+       		.setPropagate(propagate)
+       		.setBundleCallbackInstance( callbackInstance)
+       		.setBundleCallbacks(null, callbackChanged);
+   }
+
+   /**
+    * @see DependencyManager#createResourceAdapterService(String, boolean, Object, String)
+    * @deprecated use {@link DependencyManager#createResourceComponent()} 
+    **/
+   public Component createResourceAdapterService(String resourceFilter, boolean propagate, Object callbackInstance,
+       String callbackSet, String callbackChanged)
+   {
+       return createResourceComponent()
+       		.setResourceFilter(resourceFilter)
+       		.setPropagate(propagate)
+       		.setBundleCallbackInstance( callbackInstance)
+       		.setBundleCallbacks(callbackSet, callbackChanged);
+   }
+
+   /** 
+    * @see DependencyManager#createResourceAdapterService(String, boolean, Object, String)
+    * @deprecated use {@link DependencyManager#createResourceComponent()} 
+    * */
+   public Component createResourceAdapterService(String resourceFilter, Object propagateCallbackInstance,
+       String propagateCallbackMethod, Object callbackInstance, String callbackChanged)
+   {
+       return createResourceComponent()
+       		.setResourceFilter(resourceFilter)
+       		.setPropagate(propagateCallbackInstance, propagateCallbackMethod)
+       		.setBundleCallbackInstance( callbackInstance)
+       		.setBundleCallbacks(null, callbackChanged);
+   }
+
+   /** 
+    * @see DependencyManager#createResourceAdapterService(String, boolean, Object, String)
+    * @deprecated use {@link DependencyManager#createResourceComponent()} 
+    **/
+   public Component createResourceAdapterService(String resourceFilter, Object propagateCallbackInstance,
+       String propagateCallbackMethod, Object callbackInstance, String callbackSet, String callbackChanged)
+   {
+       return createResourceComponent()
+       		.setResourceFilter(resourceFilter)
+       		.setPropagate(propagateCallbackInstance, propagateCallbackMethod)
+       		.setBundleCallbackInstance( callbackInstance)
+       		.setBundleCallbacks(callbackSet, callbackChanged);
    }
 
 }

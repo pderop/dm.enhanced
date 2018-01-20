@@ -49,7 +49,7 @@ import org.osgi.framework.ServiceRegistration;
  * 
  * @author <a href="mailto:dev@felix.apache.org">Felix Project Team</a>
  */
-public class FilterComponent<T extends Component<T>> implements Component<T>, ComponentContext<T>, ComponentDeclaration {
+public abstract class FilterComponent<T extends Component<T>> implements Component<T>, ComponentContext<T>, ComponentDeclaration {
     protected volatile ComponentImpl m_component;
     protected volatile List<ComponentStateListener> m_stateListeners = new CopyOnWriteArrayList<>();
     protected volatile String m_init = "init";
@@ -242,9 +242,7 @@ public class FilterComponent<T extends Component<T>> implements Component<T>, Co
     	});
     }
     
-    protected void startInitial() {
-    	
-    }
+    protected abstract void startInitial();
 
     public void stop() {
         m_component.stop();

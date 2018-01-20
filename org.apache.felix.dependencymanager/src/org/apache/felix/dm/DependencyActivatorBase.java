@@ -222,40 +222,13 @@ public abstract class DependencyActivatorBase extends DependencyActivatorBaseCom
         return m_manager.createResourceDependency();
     }
 
-   /**
-     * Creates a new resource adapter service.
-     * 
-     * @return the resource adapter service
-     */
-    public Component createResourceAdapter(String resourceFilter, boolean propagate, Object callbackInstance, String callbackChanged) {
-        return m_manager.createResourceAdapterService(resourceFilter, propagate, callbackInstance, callbackChanged);
-    }
-
     /**
-     * Creates a new resource adapter service.
+     * Creates a new resource adapter component.
      * 
-     * @return the resource adapter service
+     * @return the resource adapter component
      */
-    public Component createResourceAdapter(String resourceFilter, boolean propagate, Object callbackInstance, String callbackSet, String callbackChanged) {
-        return m_manager.createResourceAdapterService(resourceFilter, propagate, callbackInstance, callbackSet, callbackChanged);
-    }
-    
-    /**
-     * Creates a new resource adapter service.
-     * 
-     * @return the resource adapter service
-     */
-    public Component createResourceAdapter(String resourceFilter, Object propagateCallbackInstance, String propagateCallbackMethod, Object callbackInstance, String callbackChanged) {
-        return m_manager.createResourceAdapterService(resourceFilter, propagateCallbackInstance, propagateCallbackMethod, callbackInstance, null, callbackChanged);
-    }
-    
-    /**
-     * Creates a new resource adapter service.
-     * 
-     * @return the resource adapter service
-     */
-    public Component createResourceAdapter(String resourceFilter, Object propagateCallbackInstance, String propagateCallbackMethod, Object callbackInstance, String callbackSet, String callbackChanged) {
-        return m_manager.createResourceAdapterService(resourceFilter, propagateCallbackInstance, propagateCallbackMethod, callbackInstance, callbackSet, callbackChanged);
+    public ResourceComponent createResourceComponent() {
+        return m_manager.createResourceComponent();
     }
 
 }
