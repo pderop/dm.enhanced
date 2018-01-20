@@ -2,3 +2,7 @@
 /reports/
 /generated/
 /.metadata/
+/.recommenders/
+/RemoteSystemsTempFiles/
+/rat-report.xml
+
