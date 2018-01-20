@@ -40,10 +40,10 @@ package org.apache.felix.dm;
  * public class Activator extends DependencyActivatorBase {
  *     &Override
  *     public void init(BundleContext context, DependencyManager dm) throws Exception {
- *         Component resourceComponent = dm.createResourceComponent()
+ *          Component resourceComponent = dm.createResourceComponent()
  *             .setResourceFilter("(path=/videos/*.mkv)")
- *         	   .setInterface(VideoPlayer.class, null)
- *         	   .setImplementation(VideoPlayerImpl.class);
+ *             .setInterface(VideoPlayer.class, null)
+ *             .setImplementation(VideoPlayerImpl.class);
  *         dm.add(resourceComponent);
  *     }
  * }
