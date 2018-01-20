@@ -20,6 +20,7 @@ package org.apache.felix.dm;
 
 import java.util.function.Consumer;
 
+import org.apache.felix.dm.compat.DependencyActivatorBaseCompat;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 

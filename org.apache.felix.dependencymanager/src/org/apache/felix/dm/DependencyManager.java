@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.felix.dm.compat.DependencyManagerCompat;
 import org.apache.felix.dm.impl.AdapterServiceImpl;
 import org.apache.felix.dm.impl.AspectServiceImpl;
 import org.apache.felix.dm.impl.BundleAdapterImpl;
