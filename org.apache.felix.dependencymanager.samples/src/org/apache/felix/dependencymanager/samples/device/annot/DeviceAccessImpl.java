@@ -22,10 +22,10 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 
-import org.apache.felix.dm.annotation.AdapterService;
-import org.apache.felix.dm.annotation.Init;
-import org.apache.felix.dm.annotation.ServiceDependency;
-import org.apache.felix.dm.annotation.Start;
+import org.apache.felix.dm.annotation.api.AdapterService;
+import org.apache.felix.dm.annotation.api.Init;
+import org.apache.felix.dm.annotation.api.ServiceDependency;
+import org.apache.felix.dm.annotation.api.Start;
 import org.osgi.service.log.LogService;
 
 /**

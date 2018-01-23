@@ -1,8 +1,8 @@
-# Dependency Manager Improvements
+# Dependency Manager Enhancements
 This project contains some fixes and enhancements done on the Apache Felix Dependency Manager.
 It also provides a TODO section which need to be addressed before doing the release.
 
-# How To Build And Test
+# How to build and test
 if you are using a corporate http proxy, export the following variable:
 ```sh
 $ export GRADLE_OPTS="-Dhttp.proxyHost=<your proxy ip> -Dhttp.proxyPort=<your proxy port> -Dhttps.proxyHost=<your proxy ip> -Dhttps.proxyPort=<your proxy port>"
@@ -10,36 +10,31 @@ $ export GRADLE_OPTS="-Dhttp.proxyHost=<your proxy ip> -Dhttp.proxyPort=<your pr
 then type:
 ```sh
 $ gradlew gradlew org.apache.felix.dependencymanager.annotation:jar
-$ gradlew gradlew org.apache.felix.dependencymanager.annotation5:jar
 $ gradlew jar
 $ gradlew check
 ```
-# New Features and Enhancements
+# New features and enhancements
 Two kind of improvements have been done with regard to annotations and API. Also, the dependency manager is now built using latest release of bndtools 3.5.0 as well as latest bndlib 3.5.0
 
 # Javadocs
 You can find the javadoc for the new annotation API in `./javadocs/annotation5`
 and the enhanced (compatible) api in `./javadocs/api`
 
-## Annotations Enhancements
+## Annotations enhancements
 Essentially, the following enhancements and modifications have been done:
 - added support for new user defined property type annotations (similar to OSGI R7).
 - annotations using standard r7 @ComponentPropertyType are also supported. Indeed, not only declarative service is using this annotation, other r7 apis like jaxrs whiteboard are also defining some annotations that are themselves annotated with @ComponentPropertyType; so it is important to support this annotation (The dm annotation plugin has been enhanced by reusing some part of the ds annotation scanner from bndlib, which is full of reusable useful code which has been applied to dm (scanning of property types, PREFIX_, etc ...)
 - Allow ServiceDependency to auto detect the service type when the annotation is applied on a collection class field
 - removed FactoryComponentAdapterService (some attributes have been added in the Component annotation in order to declare factory pid components with the @Component annotation)
-- removed some old annotations / attributes. For example some annotations don't support anymore the "properties" attribute because the @Property annotation is now repeatable and can be applied on the component multiple times. Moreover, the attributes and annotations related to metatype have been removed since you can now use the standard metatype annotations
+- removed some old annotations / attributes. The attributes and annotations related to metatype have been removed since you can now use the standard metatype annotations.  if users need to old version, then they can simply use the previous 4.2.1 from [old dm annotation api][oldAnnotApi]. Notice that the dm runtime is compatible with old and new annotations version, so you can use latest dm annotation runtime and old annotation api.
 
-Since some incompatible changes have been made, the major version of the annotation bundle has been bumped to 5.0.0. For the moment, the new annotations are provided by the org.apache.felix.dependencymanager.annotation5 and the new package is "org.apache.felix.dm.annotation" instead of "org.apache.felix.dm.annotation.api". The old org.apache.felix.dependencymanager.annotation bundle is preserved, for compatibility. 
+Since some incompatible changes have been made, the major version of the annotation bundle has been bumped to 5.0.0. 
 
-The org.apache.felix.dependencymanager.runtime.itest module still tests the old org.apache.felix.dependencymanager.annotation version, while the new org.apache.felix.dependencymanager.runtime.annot5.itest is testing the new org.apache.felix.dependencymanager.annotation5 5.0.0 api.
-
-The new org.apache.felix.dependencymanager.annotation5 exports the org.apache.felix.dependencymanager.annotation package and the new scanner is provided by the org.apache.felix.dependencymanager.annotation.scanner.AnnotationPlugin class.
- 
-### User Defined Property Types
+### User defined property types
 
 So far, you could define component service properties using @Property annotation, and component configururation could be declared as user defined interfaces.
 You can now declare user-defined annotations which can be used to specify both service properties and component configuration. It means that instead of declaring service properties using @Property annotation, you can now use your own annotations (which must be annotated with the new @PropertyType annotation, or possibly using the standard @ComponentPropertyType annotation). 
-### usage example
+### Usage example
 Let’s assume your write an OSGi r7 jaxrs servlet context which needs the two following service properties:
  ```
 osgi.http.whiteboard.context.name
@@ -141,27 +136,25 @@ class Hello implements HelloService {
     }
 } 
 ```
-### not backward compatible annotation changes
+### Not backward compatible annotation changes
 
 This sections describes what has been removed in the annotation5 api:
 
 - removed FactoryConfigurationAdapterService annotation, which was too verbose. when you need to define some factory pid component, just reuse the @Component annotation and declare the new factoryPid/propagate/updated attributes that have been added in the @Component annotation
 - Removed PropertyMetadata annotation: it was related to metatypes, but as of today, osgi metatypes can be defined using standard metatype annotations. No need to support this anymore.
 - Removed ResourceAdapterService and ResourceDependency annotations because it was needed to depend on some classes from the dependency manager API. The DM Api should be used directly.
-- Removed all "properties" attributes from all annotations, because @Property annotation is now repeatable (since java8)
 - Removed the following attributes from the Component annotation:
 -- FACTORY_NAME
 -- FACTORY_INSTANCE
 -- factorySet
 -- factoryMethod
-These attributes  were used to be able to create component instances multiple times. Now, simply use factoryPid Component attribute and use standard Configuration Admin in order to instantiate multiple instances of a given service (using factory configuration).
+These attributes were used to be able to create component instances multiple times. Now, simply use factoryPid Component attribute and use standard Configuration Admin in order to instantiate multiple instances of a given service (using factory configuration).
 - Removed PropertyMetaData annotation, which was related to osgi metatype. Simply use standard metatype annotation.
 
 ## BndTools
 
 the new dependency manager bndtools workspace has been reworked in order to use the latest bndtools 3.5.0, and we are now using the "aQute.bnd.repository.maven.provider.MavenBndRepository" plugin, which allows to download 3rd party libraries from maven central, instead of copying them in the cnf/localrepo/.
-
-Baselining is now implemented differently: Before we were storing binary release in cnf/releaserepo and we were doing baselining against the releaserepo. But the problem is that not all developers are using the same java compiler. So, by default, the dependency manager codebase won't include anymore the latest released bundles in cnf/releaserepo, and you can then build them manually from a "scratch workspace" with the latest dm version, using the compiler you want); then just import the generated bundles in the cnf/releaserepo repository.
+Baselining is now using last released artifacts from maven central, and the dependency source tar.gz does not contain any binaries anymore
 
 ## Api enhancements
 some enhancements have been done in the dm API:
@@ -170,7 +163,7 @@ some enhancements have been done in the dm API:
 - configuration dependency using metatypes can now declare property types
 - Allow to specify if propagated configuration dependencies must override service service properties (it was not possible to override service properties with propagated service properties so far)
 
-### Aspect/Adapters API Enhancements
+### Aspect/Adapters Api enhancements
 
 So far, aspects or adapters were defined using many methods from DependencyManager or DependencyActivatorBase classes:
 
@@ -265,7 +258,7 @@ Component adapter = createAdapterComponent()
    .add(createServiceDependency().setService(LogService.class));
 ```
 
-### Support For Multiple Configuration Types In Updated Callbacks
+### Support for multiple configuration types in callbacks
 The ConfigurationDependency and Factory components can now support updated callbacks with multiple configuration types, for example, the following Activator defines a factory component (using the enhanced api) and multiple configuration types can now be provided:
 
 ```java
@@ -305,10 +298,9 @@ so, the new signatures for the updated callbacks are now the following (for both
 - fixed a nasty deadlock when using latest DM r11 and latest SCR 2.0.12 in the same JVM (see FELIX-5716)
 
 # TODO
-1. Open question: the dependency annotations have been extremely simplified and enhanced with user defined property types. ok, but they are not backward compatible (old stuff have been removed, like attributes or annotations related to metatypes, the FactoryConfigurationAdapterService has been removed and merged with @Component annotation, etc ...). So, currently, the new annotation api version is provided by the org.apache.felix.dependencymanager5 module, and old annotations are still preserved in org.apache.felix.dependencymanager.annotation module. I wonder if it makes sense to preserve the old version, and I am tempted to simply not preserve the old api and replace it by the new one; and if users need to old version, then they can simply use the previous 4.2.1 from 
- [old dm annotation api][oldAnnotApi]. Notice that the dm runtime is compatible with old and new annotations version, so you can use latest dm annotation runtime and old annotation api.
 
-2. The ConfigurationDependency and Factory component updated method currently supports the following method signatures:
+## Add more signatures in ConfigurationDependency and factory component callbacks
+The ConfigurationDependency and Factory component updated method currently supports the following method signatures:
  * updated(Dictionary cnf)
  * updated(Component comp, Dictionary cnf)
  * updated(Component comp, Property interfaces ...)

@@ -18,8 +18,8 @@
  */
 package org.apache.felix.dependencymanager.samples.hello.annot;
 
-import org.apache.felix.dm.annotation.Component;
-import org.apache.felix.dm.annotation.ServiceDependency;
+import org.apache.felix.dm.annotation.api.Component;
+import org.apache.felix.dm.annotation.api.ServiceDependency;
 import org.osgi.service.log.LogService;
 
 /**

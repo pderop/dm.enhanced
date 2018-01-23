@@ -20,7 +20,7 @@ package org.apache.felix.dependencymanager.samples.device.annot;
 
 import java.util.Dictionary;
 
-import org.apache.felix.dm.annotation.Component;
+import org.apache.felix.dm.annotation.api.Component;
 
 /**
  * @author <a href="mailto:dev@felix.apache.org">Felix Project Team</a>

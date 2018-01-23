@@ -22,11 +22,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import org.apache.felix.dm.annotation.Component;
-import org.apache.felix.dm.annotation.Property;
-import org.apache.felix.dm.annotation.ServiceDependency;
-import org.apache.felix.dm.annotation.Start;
-import org.apache.felix.dm.annotation.Stop;
+import org.apache.felix.dm.annotation.api.Component;
+import org.apache.felix.dm.annotation.api.Property;
+import org.apache.felix.dm.annotation.api.ServiceDependency;
+import org.apache.felix.dm.annotation.api.Start;
+import org.apache.felix.dm.annotation.api.Stop;
 import org.apache.felix.service.command.CommandProcessor;
 import org.apache.felix.service.command.Descriptor;
 import org.osgi.service.log.LogService;

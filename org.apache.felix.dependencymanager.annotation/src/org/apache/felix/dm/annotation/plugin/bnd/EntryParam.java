@@ -45,6 +45,7 @@ public enum EntryParam
     pid,
     pidClass,
     configType, // inject a proxy configuration type 
+    configTypes, // inject multiple proxy configuration type interfaces 
     factoryPid,
     factoryPidClass,
     propagate, 

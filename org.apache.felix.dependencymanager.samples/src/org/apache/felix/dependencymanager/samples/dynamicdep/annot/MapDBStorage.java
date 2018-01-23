@@ -20,9 +20,9 @@ package org.apache.felix.dependencymanager.samples.dynamicdep.annot;
 
 import java.io.Serializable;
 
-import org.apache.felix.dm.annotation.Component;
-import org.apache.felix.dm.annotation.Property;
-import org.apache.felix.dm.annotation.ServiceDependency;
+import org.apache.felix.dm.annotation.api.Component;
+import org.apache.felix.dm.annotation.api.Property;
+import org.apache.felix.dm.annotation.api.ServiceDependency;
 import org.osgi.service.log.LogService;
 
 /**

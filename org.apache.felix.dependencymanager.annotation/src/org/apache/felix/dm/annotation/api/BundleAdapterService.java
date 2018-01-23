@@ -45,14 +45,12 @@ import org.osgi.framework.Bundle;
  * <pre>
  * &#64;BundleAdapterService(filter = "(Video-Path=*)", stateMask = Bundle.ACTIVE, propagate=true)
  * public class VideoPlayerImpl implements VideoPlayer {
- *     Bundle bundle; // Injected by reflection
+ *     volatile Bundle bundle; // Injected by reflection
  *     
  *     void play() {
  *         URL mpegFile = bundle.getEntry(bundle.getHeaders().get("Video-Path"));
  *         // play the video provided by the bundle ...
- *     }
- *     
- *     void stop() {}
+ *     }     
  * }
  * </pre>
  * </blockquote>
@@ -73,11 +71,12 @@ public @Retention(RetentionPolicy.CLASS)
     /**
      * Additional properties to use with the service registration
      * @return the bundle adapter properties
+     * @deprecated you can apply {@link Property} annotation directly on the component class.
      */
     Property[] properties() default {};
     
    /**
-     * The filter used to match a given bundle.
+     * The ldap filter used to match some manifest headers of the adapted bundle. 
      * @return the bundle adapter filter
      */
     String filter();

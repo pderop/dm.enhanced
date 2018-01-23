@@ -21,11 +21,11 @@ package org.apache.felix.dependencymanager.samples.dynamicdep.annot;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.felix.dm.annotation.Component;
-import org.apache.felix.dm.annotation.ConfigurationDependency;
-import org.apache.felix.dm.annotation.Init;
-import org.apache.felix.dm.annotation.ServiceDependency;
-import org.apache.felix.dm.annotation.Start;
+import org.apache.felix.dm.annotation.api.Component;
+import org.apache.felix.dm.annotation.api.ConfigurationDependency;
+import org.apache.felix.dm.annotation.api.Init;
+import org.apache.felix.dm.annotation.api.ServiceDependency;
+import org.apache.felix.dm.annotation.api.Start;
 import org.osgi.service.cm.ConfigurationException;
 import org.osgi.service.event.EventAdmin;
 import org.osgi.service.log.LogService;

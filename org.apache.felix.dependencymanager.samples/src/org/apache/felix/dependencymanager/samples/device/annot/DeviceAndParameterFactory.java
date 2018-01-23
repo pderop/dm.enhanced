@@ -22,9 +22,9 @@ import java.io.IOException;
 import java.util.Dictionary;
 import java.util.Hashtable;
 
-import org.apache.felix.dm.annotation.Component;
-import org.apache.felix.dm.annotation.ServiceDependency;
-import org.apache.felix.dm.annotation.Start;
+import org.apache.felix.dm.annotation.api.Component;
+import org.apache.felix.dm.annotation.api.ServiceDependency;
+import org.apache.felix.dm.annotation.api.Start;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.service.log.LogService;

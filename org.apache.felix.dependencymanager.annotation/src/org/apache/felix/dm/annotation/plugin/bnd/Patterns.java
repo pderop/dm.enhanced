@@ -81,7 +81,20 @@ public class Patterns
 
     // Pattern used to check if a method returns a Map
     public final static Pattern METHOD_RETURN_MAP = Pattern.compile("\\(\\)Ljava/util/Map;");
+    
+    // Pattern to detect a configuration updated callback without any config types, like for instance:
+    // updated(Dictionary)
+    // updated(Component, Dictionary)
+    public final static Pattern UPDATED_NO_CONFIG_TYPES = Pattern.compile
+    		("\\(((Ljava/util/Dictionary;)|(Lorg/apache/felix/dm/Component;Ljava/util/Dictionary;))\\)V");
 
+    // Pattern to detect a configuration updated callback with some config types, like for instance:
+    // updated(ConfigType1, ConfigType2, ...)
+    // updated(Dictionary, ConfigType1, ConfigType2, ...)
+    // updated(Component, Dictionary, ConfigType1, ConfigType2, ...)
+    public final static Pattern UPDATED_CONFIG_TYPES = Pattern.compile
+    		("((Ljava/util/Dictionary;)|(Lorg/apache/felix/dm/Component;)|(L([^;]+);))");
+    
     /**
      * Parses a class.
      * @param clazz the class to be parsed (the package is "/" separated).
