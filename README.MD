@@ -299,7 +299,7 @@ so, the new signatures for the updated callbacks are now the following (for both
 
 # TODO
 
-## Add more signatures in ConfigurationDependency and factory component callbacks
+## Add more signatures in configuration callbacks
 The ConfigurationDependency and Factory component updated method currently supports the following method signatures:
  * updated(Dictionary cnf)
  * updated(Component comp, Dictionary cnf)
