@@ -48,7 +48,7 @@ public class AdapterTest extends TestBase {
         m.add(s1Adapter);
         m.add(s2);
         
-        m_e.waitForStep(3, 500000);
+        m_e.waitForStep(3, 5000);
         clearComponents();
     }
     
