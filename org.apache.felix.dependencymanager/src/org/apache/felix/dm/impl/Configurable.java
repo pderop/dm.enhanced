@@ -134,7 +134,7 @@ public final class Configurable {
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
             if (method.getName().equals("toString")) {
-                return m_config;
+                return m_config.toString();
             }
             String name = getPropertyName(method.getName());
 

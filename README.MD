@@ -17,7 +17,7 @@ $ gradlew check
 Two kind of improvements have been done with regard to annotations and API. Also, the dependency manager is now built using latest release of bndtools 3.5.0 as well as latest bndlib 3.5.0
 
 # Javadocs
-You can find the javadoc for the new annotation API in `./javadocs/annotation5`
+You can find the javadoc for the new annotation API in `./javadocs/annotation`
 and the enhanced (compatible) api in `./javadocs/api`
 
 ## Annotations enhancements
@@ -138,7 +138,7 @@ class Hello implements HelloService {
 ```
 ### Not backward compatible annotation changes
 
-This sections describes what has been removed in the annotation5 api:
+This sections describes what has been removed in the annotation api:
 
 - removed FactoryConfigurationAdapterService annotation, which was too verbose. when you need to define some factory pid component, just reuse the @Component annotation and declare the new factoryPid/propagate/updated attributes that have been added in the @Component annotation
 - Removed PropertyMetadata annotation: it was related to metatypes, but as of today, osgi metatypes can be defined using standard metatype annotations. No need to support this anymore.
