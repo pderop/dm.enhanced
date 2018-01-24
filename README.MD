@@ -162,6 +162,9 @@ some enhancements have been done in the dm API:
 - you can now declare multiple property type interfaces when using Configuration Dependency or Factory Components (this was needed to implement the enhancements for the annotations)
 - configuration dependency using metatypes can now declare property types
 - Allow to specify if propagated configuration dependencies must override service service properties (it was not possible to override service properties with propagated service properties so far)
+- Added the following signatures in Component interface:
+** setInterface(Class<?> serviceName, Dictionary<?,?> properties)
+** setInterface(Class<?>[] serviceNames, Dictionary<?,?> properties)
 
 ### Aspect/Adapters Api enhancements
 

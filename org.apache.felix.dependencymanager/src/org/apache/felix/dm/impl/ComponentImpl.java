@@ -49,6 +49,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import org.apache.felix.dm.Component;
 import org.apache.felix.dm.ComponentDeclaration;
@@ -460,6 +461,17 @@ public class ComponentImpl implements Component<ComponentImpl>, ComponentContext
         return this;
 	}
 	
+    @Override
+	public ComponentImpl setInterface(Class<?> serviceName, Dictionary<?, ?> properties) {
+        return setInterface(serviceName.getName(), properties);
+	}
+
+    @Override
+	public ComponentImpl setInterface(Class<?>[] serviceName, Dictionary<?, ?> properties) {
+		String[] serviceNameStr = Stream.of(serviceName).map(clazz -> clazz.getName()).toArray(String[]::new);
+        return setInterface(serviceNameStr, properties);
+	}
+
 	@Override
     public void handleEvent(final DependencyContext dc, final EventType type, final Event... event) {
         // since this method can be invoked by anyone from any thread, we need to

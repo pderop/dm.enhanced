@@ -20,6 +20,7 @@ package org.apache.felix.dm;
 
 import java.util.Dictionary;
 
+import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.framework.ServiceRegistration;
 
 
@@ -31,6 +32,7 @@ import org.osgi.framework.ServiceRegistration;
  * 
  * @author <a href="mailto:dev@felix.apache.org">Felix Project Team</a>
  */
+@ProviderType
 public interface Component<T extends Component<T>> {
     /**
      * Sets the implementation for this component. You can actually specify
@@ -118,6 +120,26 @@ public interface Component<T extends Component<T>> {
 	public T setInterface(String[] serviceNames, Dictionary<?, ?> properties);
 
     /**
+     * Sets the public interface under which this component should be registered
+     * in the OSGi service registry.
+     *  
+     * @param serviceName the name of the service interface
+     * @param properties the properties for this service
+     * @return this component
+     */
+	public T setInterface(Class<?> serviceName, Dictionary<?,?> properties);
+
+    /**
+     * Sets the public interfaces under which this component should be registered
+     * in the OSGi service registry.
+     *  
+     * @param serviceNames the names of the service interface
+     * @param properties the properties for these services
+     * @return this component
+     */
+	public T setInterface(Class<?>[] serviceNames, Dictionary<?, ?> properties);
+
+	/**
      * Configures auto configuration of injected classes in the component instance.
      * The following injections are currently performed, unless you explicitly
      * turn them off:

@@ -211,6 +211,15 @@ public abstract class FilterComponent<T extends Component<T>> implements Compone
         }
         return (T) this;
     }
+    
+    public T setInterface(Class<?> serviceName, Dictionary<?, ?> properties) {
+    	return setInterface(serviceName.getName(), properties);
+    }
+    
+    public T setInterface(Class<?>[] serviceInterfaces, Dictionary<?, ?> properties) {
+    	String[] ifaces = Stream.of(serviceInterfaces).map(clazz -> clazz.getName()).toArray(String[]::new);
+    	return setInterface(ifaces, properties);
+    }
 
     @SuppressWarnings("unchecked")
     public T setServiceProperties(Dictionary<?, ?> serviceProperties) {
