@@ -310,7 +310,7 @@ From the provider side, a new "scope" parameter has been added in the Component 
 - BUNDLE: the service will be registered as a _ServiceFFactory_
 - PROTOTYPE: the service will be registered as a _PrototypeServiceFactory_
 
-Service scoped are supported by all kind of DM service components:
+Scoped Services are supported by all kind of DM service components:
 - Component
 - Aspect Service
 - Adapter Service
@@ -334,7 +334,7 @@ public static class MyServiceImpl implements MyService {
     @Start
     void start() {
         // called on each MyService instance
-	}
+    }
 }
 ```
 
