@@ -310,6 +310,13 @@ From the provider side, a new "scope" parameter has been added in the Component 
 - BUNDLE: the service will be registered as a _ServiceFFactory_
 - PROTOTYPE: the service will be registered as a _PrototypeServiceFactory_
 
+Service scoped are supported by all kind of DM service components:
+- Component
+- Aspect Service
+- Adapter Service
+- Factory Pid Service
+- Bundle Adapter service
+
 When a consumer requests a service (using ServiceDependency), then DM will automatically dereference the service like this:
 - if the service has a _SERVICE_SCOPE_ service property matching _SCOPE_PROTOTYPE_, the DM will internally derefence the service using the _ServiceObject_ API: so, the consumer will get its own copy of the requested service instance.
 - else, DM will internally dereference the service, as before.
@@ -325,8 +332,8 @@ import org.apache.felix.dm.annotation.api.ServiceScope;
 @Component(scope=ServiceScope.PROTOTYPE)
 public static class MyServiceImpl implements MyService {
     @Start
-	void start() {
-	   // called on each MyService instance
+    void start() {
+        // called on each MyService instance
 	}
 }
 ```
