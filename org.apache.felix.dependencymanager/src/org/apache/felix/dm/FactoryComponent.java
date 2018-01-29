@@ -85,7 +85,7 @@ public interface FactoryComponent extends Component<FactoryComponent> {
     /**
      * Sets the propagate flag (true means all public configuration properties are propagated to service properties).
      * By default, public configurations are not propagated.
-     * @param propagate the propagate flag (true means all public configuration properties are propagated to service properties).
+     * @param propagate the propagate flag (false, by default; true means all public configuration properties are propagated to service properties).
      */
     FactoryComponent setPropagate(boolean propagate);
 

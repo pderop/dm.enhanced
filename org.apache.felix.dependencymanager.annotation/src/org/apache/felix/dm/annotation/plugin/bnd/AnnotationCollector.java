@@ -56,6 +56,7 @@ import org.apache.felix.dm.annotation.api.PropertyType;
 import org.apache.felix.dm.annotation.api.Registered;
 import org.apache.felix.dm.annotation.api.RepeatableProperty;
 import org.apache.felix.dm.annotation.api.ServiceDependency;
+import org.apache.felix.dm.annotation.api.ServiceScope;
 import org.apache.felix.dm.annotation.api.Start;
 import org.apache.felix.dm.annotation.api.Stop;
 import org.apache.felix.dm.annotation.api.Unregistered;
@@ -108,6 +109,7 @@ public class AnnotationCollector extends ClassDataCollector
     private String m_field;
 	private FieldDef m_fieldDef;    
     private String m_method;
+	private MethodDef m_methodDef;
     private String m_descriptor;
     private final Set<String> m_dependencyNames = new HashSet<String>();
     private final List<EntryWriter> m_writers = new ArrayList<EntryWriter>();
@@ -123,6 +125,7 @@ public class AnnotationCollector extends ClassDataCollector
     private String m_bundleContextField;
     private String m_dependencyManagerField;
     private String m_registrationField;
+    private String m_bundleField;
     private String m_componentField;
     private String m_registeredMethod;
     private String m_unregisteredMethod;
@@ -184,7 +187,7 @@ public class AnnotationCollector extends ClassDataCollector
      * "updated" -> ["(Ljava/util/Dictionary;)V", "(Lfoo.bar.MyConfig;)V"]
      */
     final Map<String, List<Descriptors.Descriptor>> m_methods = new HashMap<>();
-		
+    	
 	/**
 	 * Object used to see if an annotation is matching a declarative service ComponentPropertyType annotation.
 	 */
@@ -283,9 +286,10 @@ public class AnnotationCollector extends ClassDataCollector
     @Override
     public void method(Clazz.MethodDef method)
     {
-        m_logger.debug("Parsed method %s, descriptor=%s", method.getName(), method.getDescriptor());
+        m_logger.debug("Parsed method %s descriptor=%s signature=%s", method.getName(), method.getDescriptor(), method.getSignature());
         m_isField = false;
         m_method = method.getName();
+        m_methodDef = method;
         m_descriptor = method.getDescriptor().toString();
         m_methods.computeIfAbsent(method.getName(), k -> new ArrayList<Descriptors.Descriptor>()).add(method.getDescriptor());
     }
@@ -296,7 +300,7 @@ public class AnnotationCollector extends ClassDataCollector
     @Override
     public void field(Clazz.FieldDef field)
     {
-        m_logger.debug("Parsed field %s, descriptor=%s", field.getName(), field.getDescriptor());
+        m_logger.debug("Parsed field %s descriptor=%s", field.getName(), field.getDescriptor());
         m_isField = true;
         m_field = field.getName();
         m_fieldDef = field;
@@ -665,7 +669,7 @@ public class AnnotationCollector extends ClassDataCollector
         writer.putString(annotation, EntryParam.factoryMethod, null);
     }
 
-    private void addCommonServiceParams(EntryWriter writer)
+	private void addCommonServiceParams(EntryWriter writer)
     {
         if (m_initMethod != null)
         {
@@ -736,6 +740,15 @@ public class AnnotationCollector extends ClassDataCollector
         {
             writer.put(EntryParam.registrationField, m_registrationField);
         }
+        
+        if (m_bundleField != null)
+        {
+        	Object scope = writer.getParameter(EntryParam.scope);
+        	if (scope == null || scope == ServiceScope.SINGLETON.name()) {
+        		throw new IllegalStateException("can't inject a bundle field on a component without prototype or bundle scope");
+        	}        	
+            writer.put(EntryParam.bundle, m_bundleField);
+        }
     }
 
     /**
@@ -756,6 +769,8 @@ public class AnnotationCollector extends ClassDataCollector
     private void parseServiceDependencyAnnotation(Annotation annotation)
     {
         EntryWriter writer = new EntryWriter(EntryType.ServiceDependency);
+        boolean doDereference = true; // false means dependency manager must not internally dereference the service dependency
+        
         m_writers.add(writer);
 
         // service attribute
@@ -773,15 +788,25 @@ public class AnnotationCollector extends ClassDataCollector
             else
             {
                 // if we are parsing some inherited classes, detect if the bind method is already declared in child classes
-                checkDependencyAlreadyDeclaredInChild(annotation, m_method, true);                
+                checkDependencyAlreadyDeclaredInChild(annotation, m_method, true);   
+                
             	// parse "bind(Component, ServiceReference, Service)" signature
             	service = Patterns.parseClass(m_descriptor, Patterns.BIND_CLASS1, 3, false);            		
             	
             	if (service == null) {
                 	// parse "bind(Component, Service)" signature
-                	service = Patterns.parseClass(m_descriptor, Patterns.BIND_CLASS2, 2, false);            		
+                	service = Patterns.parseClass(m_descriptor, Patterns.BIND_CLASS2, 2, false);    		
             	}
             	
+            	if (service == null) {
+            		// parse "bind(ServiceReference<T>)" or "bind(ServiceObjects<T>)" signatures
+                	service = Patterns.inferTypeFromGenericType(m_methodDef.getDescriptor().toString(), 
+                												m_methodDef.getSignature(),
+                												m_logger);
+                	// dm must not internally dereference the service, since it is injected as a ServiceRef or a ServiceObjects
+                	doDereference = false;
+            	}
+
             	if (service == null) {
             		// parse "bind(Component, Map, Service)" signature
                 	service = Patterns.parseClass(m_descriptor, Patterns.BIND_CLASS3, 3, false);            		
@@ -815,7 +840,7 @@ public class AnnotationCollector extends ClassDataCollector
             	if (service == null) {
             		// parse "bind(Dictionary, Service)" signature
                 	service = Patterns.parseClass(m_descriptor, Patterns.BIND_CLASS9, 2, true);            		
-            	}
+            	}            	
             }
         }
         
@@ -881,7 +906,7 @@ public class AnnotationCollector extends ClassDataCollector
         writer.putString(annotation, EntryParam.propagate, null);
         
         // dereference flag
-        writer.putString(annotation, EntryParam.dereference, null);
+        writer.putString(annotation, EntryParam.dereference, String.valueOf(doDereference));
     }
         
     /**
@@ -1268,6 +1293,13 @@ public class AnnotationCollector extends ClassDataCollector
                 parseProperty(propertyAnnotation, writer);
             }             
         }
+                
+        // scope attribute
+        String scope = component.get("scope");
+        if (scope == null) {
+        	scope = ServiceScope.SINGLETON.name();
+        }
+        writer.put(EntryParam.scope, scope);
     }
     
     /**
@@ -1483,6 +1515,13 @@ public class AnnotationCollector extends ClassDataCollector
                 throw new IllegalStateException("detected multiple @Inject annotation from class " + m_currentClassName + " (on from child classes)");
             }
             m_registrationField = m_field;
+        }
+        else if (Patterns.BUNDLE.matcher(m_descriptor).matches())
+        {
+            if (m_bundleField != null) {
+                throw new IllegalStateException("detected multiple @Inject annotation from class " + m_currentClassName + " (on from child classes)");
+            }
+            m_bundleField = m_field;
         }
         else
         {

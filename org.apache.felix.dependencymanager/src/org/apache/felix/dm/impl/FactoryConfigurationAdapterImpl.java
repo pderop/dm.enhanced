@@ -255,6 +255,7 @@ public class FactoryConfigurationAdapterImpl extends FilterComponent<FactoryComp
             newService.setFactory(m_factory, m_factoryCreateMethod); // if not set, no effect
             newService.setComposition(m_compositionInstance, m_compositionMethod); // if not set, no effect
             newService.setCallbacks(m_callbackObject, m_init, m_start, m_stop, m_destroy); // if not set, no effect
+            newService.setScope(m_scope);
             configureAutoConfigState(newService, m_component);
             
             copyDependencies(m_component.getDependencies(), newService);

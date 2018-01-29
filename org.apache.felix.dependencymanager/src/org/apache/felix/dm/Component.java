@@ -34,7 +34,42 @@ import org.osgi.framework.ServiceRegistration;
  */
 @ProviderType
 public interface Component<T extends Component<T>> {
-    /**
+    
+	/**
+	 * Component service scopes
+	 */
+	enum ServiceScope {
+		/**
+		 * When the component is registered as a service, it must be registered as a
+		 * singleton: only a single instance of the component must be
+		 * used for all service consumers. SINGLETON scope is the default scope.
+		 */
+        SINGLETON,
+        
+    	/**
+    	 * When the component is registered as a service, it must be registered as a
+    	 * bundle scope service and an instance of the component must be created for
+    	 * each bundle using the service.
+    	 */
+        BUNDLE,
+        
+    	/**
+    	 * When the component is registered as a service, it must be registered as a
+    	 * prototype scope service and an instance of the component must be created
+    	 * for each distinct request for the service.
+    	 */
+        PROTOTYPE
+    }
+
+	/**
+	 * Sets the component scope.
+	 * @param scope the component scope (default=SINGLETON)
+	 * 
+	 * @return this component
+	 */
+    T setScope(ServiceScope scope);
+    
+   /**
      * Sets the implementation for this component. You can actually specify
      * an instance you have instantiated manually, or a <code>Class</code>
      * that will be instantiated using its default constructor when the

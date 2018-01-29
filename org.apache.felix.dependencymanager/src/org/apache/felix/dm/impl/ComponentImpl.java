@@ -66,6 +66,8 @@ import org.apache.felix.dm.context.Event;
 import org.apache.felix.dm.context.EventType;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.PrototypeServiceFactory;
+import org.osgi.framework.ServiceFactory;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.log.LogService;
 
@@ -292,7 +294,9 @@ public class ComponentImpl implements Component<ComponentImpl>, ComponentContext
      * Used to track the last state we delivered to any state listeners. 
      */
     private ComponentState m_lastStateDeliveredToListeners = ComponentState.INACTIVE;
-    
+
+	private volatile ServiceScope m_scope = Component.ServiceScope.SINGLETON;
+
     /**
      * Default component declaration implementation.
      */
@@ -326,6 +330,52 @@ public class ComponentImpl implements Component<ComponentImpl>, ComponentContext
         public String getType() {
             return m_type;
         }
+    }
+
+    class FactoryBase {
+        final Map<Object, ComponentImpl> m_clones = new ConcurrentHashMap<>();
+        
+        public Object getService(Bundle bundle, ServiceRegistration<Object> registration) {
+        	// create a clone of the prototype for the consumer
+        	ComponentImpl clone = (ComponentImpl) m_manager.createComponent()
+                    .setImplementation(m_componentDefinition)
+                    .setFactory(m_instanceFactory, m_instanceFactoryCreateMethod) // if not set, no effect
+                    .setComposition(m_compositionManager, m_compositionManagerGetMethod) // if not set, no effect
+                    .setCallbacks(m_callbackInstance, m_callbackInit, m_callbackStart, m_callbackStop, m_callbackDestroy); // if not set, no effect
+        	clone.setThreadPool(m_executor);
+        	configureAutoConfigState(clone, ComponentImpl.this);
+        	copyDependencies(getDependencies(), clone);    
+        	m_listeners.forEach(clone::add);
+        	clone.instantiateComponent();
+        	clone.autoConfigureImplementation(ServiceRegistration.class, registration);
+        	Boolean bundleAutoConfig = m_autoConfig.get(Bundle.class);
+        	boolean injectBundle = bundleAutoConfig == null ? true : bundleAutoConfig;
+        	if (injectBundle) {
+        		clone.setAutoConfig(Bundle.class, true);
+        		clone.autoConfigureImplementation(Bundle.class, bundle);
+        	}
+        	clone.start();
+        	Object instance = clone.getInstance();
+        	if (instance == null) {
+        		// Race condition: the prototype is probably deactivating.
+        		throw new IllegalStateException("Can't create prototype instance");
+        	}
+        	m_clones.put(instance, clone);
+        	return instance;
+        }
+
+        public void ungetService(Bundle bundle, ServiceRegistration<Object> registration, Object service) {
+            ComponentImpl clone = m_clones.remove(service);
+            if (clone != null) {
+            	clone.stop();
+            }
+        }        
+    }
+
+    class ComponentServiceFactory extends FactoryBase implements ServiceFactory<Object> {
+    }
+
+    class ComponentPrototypeServiceFactory extends FactoryBase implements PrototypeServiceFactory<Object> {
     }
 
     /**
@@ -822,7 +872,16 @@ public class ComponentImpl implements Component<ComponentImpl>, ComponentContext
         return m_componentName;
     }
     
-    
+	@Override
+	public ComponentImpl setScope(ServiceScope scope) {
+	    m_scope = scope;
+	    return this;
+	}
+	
+	ServiceScope getScope() {
+	    return m_scope;
+	}
+	
     private void generateNameBasedOnServiceAndProperties() {
     	StringBuilder sb = new StringBuilder();
         Object serviceName = m_serviceName;
@@ -1142,13 +1201,23 @@ public class ComponentImpl implements Component<ComponentImpl>, ComponentContext
 	}
 
 	private void invokeStart() {
-        invoke(m_callbackStart);
-        m_startCalled = true;
+		// Only invoke start callback for singleton components.
+		// We don't invoke start callbacks for components with scope=prototype or bundle because
+		// prototypes (bundle/prototype) components are only used to register ServiceFactory (or PrototypeServiceFactory) services. 
+		if (m_scope == ServiceScope.SINGLETON) {
+			invoke(m_callbackStart);
+			m_startCalled = true;
+		}
 	}
 
     private void invokeStop() {
-        invoke(m_callbackStop);
-        m_startCalled = false;
+		// Only invoke stop callback for singleton components.
+		// We don't invoke stop callbacks for components with scope=prototype or bundle because
+		// prototypes (bundle/prototype) components are only used to register ServiceFactory (or PrototypeServiceFactory) services. 
+		if (m_scope == ServiceScope.SINGLETON) {
+			invoke(m_callbackStop);
+			m_startCalled = false;
+		}
 	}
 
 	/**
@@ -1413,11 +1482,18 @@ public class ComponentImpl implements Component<ComponentImpl>, ComponentContext
 
             // register the service
             try {
+                Object componentInstance = null;
+                switch (m_scope) {
+                   case SINGLETON: componentInstance = m_componentInstance; break;
+                   case BUNDLE: componentInstance = new ComponentServiceFactory(); break;
+                   case PROTOTYPE: componentInstance = new ComponentPrototypeServiceFactory(); break;
+                }
+
                 if (m_serviceName instanceof String) {
-                    registration = m_context.registerService((String) m_serviceName, m_componentInstance, properties);
+                    registration = m_context.registerService((String) m_serviceName, componentInstance, properties);
                 }
                 else {
-                    registration = m_context.registerService((String[]) m_serviceName, m_componentInstance, properties);
+                    registration = m_context.registerService((String[]) m_serviceName, componentInstance, properties);
                 }
                 wrapper.setServiceRegistration(registration);
             }
@@ -1644,12 +1720,14 @@ public class ComponentImpl implements Component<ComponentImpl>, ComponentContext
     }
 
 	private void notifyListeners(ComponentState state) {
-		m_lastStateDeliveredToListeners = state;
-		for (ComponentStateListener l : m_listeners) {
-			try {
-				l.changed(this, state);
-			} catch (Exception e) {
-				m_logger.log(Logger.LOG_ERROR, "Exception caught while invoking component state listener", e);
+		if (m_scope == ServiceScope.SINGLETON) {
+			m_lastStateDeliveredToListeners = state;
+			for (ComponentStateListener l : m_listeners) {
+				try {
+					l.changed(this, state);
+				} catch (Exception e) {
+					m_logger.log(Logger.LOG_ERROR, "Exception caught while invoking component state listener", e);
+				}
 			}
 		}
 	}
@@ -1770,4 +1848,30 @@ public class ComponentImpl implements Component<ComponentImpl>, ComponentContext
 			exec.execute(task);
 		}
     }
+    
+    private void configureAutoConfigState(Component target, ComponentContext source) {
+        configureAutoConfigState(target, source, BundleContext.class);
+        configureAutoConfigState(target, source, ServiceRegistration.class);
+        configureAutoConfigState(target, source, DependencyManager.class);
+        configureAutoConfigState(target, source, Component.class);
+    }
+    
+    private void configureAutoConfigState(Component target, ComponentContext source, Class<?> clazz) {
+        String name = source.getAutoConfigInstance(clazz);
+        if (name != null) {
+            target.setAutoConfig(clazz, name);
+        }
+        else {
+            target.setAutoConfig(clazz, source.getAutoConfig(clazz));
+        }
+    }    
+    
+    private void copyDependencies(List<DependencyContext> dependencies, Component component) {
+        for (DependencyContext dc : dependencies) {
+            DependencyContext copy = dc.createCopy();
+
+            component.add(copy);
+        }
+    }
+
 }

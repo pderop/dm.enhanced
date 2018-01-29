@@ -14,7 +14,12 @@ $ gradlew jar
 $ gradlew check
 ```
 # New features and enhancements
-Two kind of improvements have been done with regard to annotations and API. Also, the dependency manager is now built using latest release of bndtools 3.5.0 as well as latest bndlib 3.5.0
+The following improvements have been done:
+- annotation API has been simplified
+- support for user-defined configuration types (annotations)
+- DM API has been reworked to simplify definition of aspect and adapters.
+- Support for OSGI service scopes
+- The dependency manager is now built using latest release of bndtools 3.5.0 as well as latest bndlib 3.5.0
 
 # Javadocs
 You can find the javadoc for the new annotation API in `./javadocs/annotation`
@@ -295,6 +300,108 @@ so, the new signatures for the updated callbacks are now the following (for both
 * updated(Property interfaces ...)
 * updated(Dictionary cnf, Property interfaces ...)
 * updated(Component comp, Dictionary cnf, Property interfaces ...)
+
+## Support for service scopes
+
+sometimes, you want to use OSGI ServiceObjects, which allows to control the scope of registered services, and maybe it would be useful to provide some new simple functionalities in DM with regard to the usage of service objects (to reduce boiler plate code).
+
+From the provider side, a new "scope" parameter has been added in the Component interface, allowing to define the scope of the registered service, and the parameter will have three enum values: SINGLETON, BUNDLE, PROTOTYPE
+- SINGLETON: it's as before: your registered service is a singleton
+- BUNDLE: the service will be registered as a _ServiceFFactory_
+- PROTOTYPE: the service will be registered as a _PrototypeServiceFactory_
+
+When the provider service is intantianted (because one consumer requests a service instance), then if the scope is BUNDLE or PROTOTYPE, the client _Bundle_ object will be injected in the provider implementation component instance (on an auto config class field, configurable as usual using Component.setAutoConfig method).
+
+When a consumer requests a service (using ServiceDependency), then DM will automatically dereference the service like this:
+- if the service has a _SERVICE_SCOPE_ service property matching _SCOPE_PROTOTYPE_, the DM will internally derefence the service using the _ServiceObject_ API: so, the consumer will get its own copy of the requested service instance.
+- else, DM will internally dereference the service, as before.
+
+### Example using annotations
+
+Here is a MyService component with PROTOTYPE scope, each requester will get its own copy of MyService instance (the MyServiceImpl.start() method will be called for each MyServiceImpl instance):
+
+```java
+import org.apache.felix.dm.annotation.api.Component;
+import org.apache.felix.dm.annotation.api.ServiceScope;
+
+@Component(scope=ServiceScope.PROTOTYPE)
+public static class MyServiceImpl implements MyService {
+    @Start
+	void start() {
+	   // called on each MyService instance
+	}
+}
+```
+
+The above service will then automatically instantiated for each service requester:
+```java
+import org.apache.felix.dm.annotation.api.Component;
+import org.apache.felix.dm.annotation.api.ServiceScope;
+
+@Component
+public static class Client1 {
+    @ServiceDependency
+    void bind(MyService service) {
+       // Client1 will be injected with its own MyService instance
+    }
+}
+
+@Component
+public static class Client2 {
+    @ServiceDependency
+    void bind(MyService service) {
+           // Client2 will be injected with its own MyService instance
+    }
+}
+```
+The two Client1/Client above will be injected with two distinct component instances for the MyService service (each MyServiceImpl instance will be invoke in its start callback).
+
+Now, if you want to control the creation of the MyService, you can then define a bind method which takes as argument a ServiceObjects<MyService> parameter like this:
+```java
+import org.apache.felix.dm.annotation.api.Component;
+import org.apache.felix.dm.annotation.api.ServiceScope;
+
+@Component
+public static class Client {
+    @ServiceDependency
+    void bind(ServiceObject<MyService> serviceObjects) {
+        MyService service;
+        try {
+            service = serviceObjects.getService();
+        } finally {
+            serviceObjects.ungetService(service);
+        }
+    }
+}
+```
+
+Internally, DM will use the PrototypeServiceFactory.getService(Bundle clientBundle, ServiceRegistration reg) method in order to instantiate the MyServiceImpl component. So, the MyServiceImpl component can optionally use the @Inject annotation in order to get injected with the clientBundle and/or the service regisration, like this:
+
+```java
+import org.apache.felix.dm.annotation.api.Component;
+import org.apache.felix.dm.annotation.api.ServiceScope;
+
+@Component(scope=ServiceScope.PROTOTYPE)
+public static class MyServiceImpl implements MyService {
+   
+    @Inject
+    Bundle m_clientBundle;
+    
+    @Inject
+    ServiceRegisration m_registration;
+
+    @Start
+	void start() {
+	   // called on each MyService instance.
+	}
+}
+```
+
+
+
+### Example using DM API
+
+TBD
 
 # Bug fixed
 

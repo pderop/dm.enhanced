@@ -69,5 +69,7 @@ public enum EntryParam
     registrationField, 
     registered, 
     unregistered,
-    dereference
+    dereference,
+    scope,
+    bundle
 }

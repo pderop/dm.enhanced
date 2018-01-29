@@ -98,4 +98,13 @@ public @Retention(RetentionPolicy.CLASS)
      * @return the factory method
      */
     String factoryMethod() default "";
+    
+	/**
+	 * The service scope for the service of this Component.
+	 * 
+	 * <p>
+	 * If not specified, the {@link ServiceScope#SINGLETON singleton} service
+	 * scope is used. 
+	 */
+	ServiceScope scope() default ServiceScope.SINGLETON;
 }

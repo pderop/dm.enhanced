@@ -43,6 +43,7 @@ import org.osgi.framework.ServiceReference;
  * (Service service, Dictionary properties)
  * (Dictionary properties, Service service)
  * (Object service)
+ * (ServiceObjects service)
  * }</pre>
  * 
  * <p> For "swap" callbacks, the following method signatures are supported:

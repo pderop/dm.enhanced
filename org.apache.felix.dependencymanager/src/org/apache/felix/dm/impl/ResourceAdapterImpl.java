@@ -124,6 +124,7 @@ public class ResourceAdapterImpl extends FilterComponent<ResourceComponent> impl
                 .setFactory(m_factory, m_factoryCreateMethod) // if not set, no effect
                 .setComposition(m_compositionInstance, m_compositionMethod) // if not set, no effect
                 .setCallbacks(m_callbackObject, m_init, m_start, m_stop, m_destroy) // if not set, no effect
+                .setScope(m_scope)
                 .add(resourceDependency);
             
             configureAutoConfigState(service, m_component);

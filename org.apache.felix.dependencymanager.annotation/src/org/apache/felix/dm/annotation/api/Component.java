@@ -158,6 +158,14 @@ public @interface Component
      */
     boolean propagate() default false;
 
+	/**
+	 * The service scope for the service of this Component.
+	 * 
+	 * <p>
+	 * If not specified, the {@link ServiceScope#SINGLETON singleton} service
+	 * scope is used. 
+	 */
+	ServiceScope scope() default ServiceScope.SINGLETON;
 
     /**
      * Sets list of provided service properties. Since R7 version, Property annotation is repeatable and you can directly

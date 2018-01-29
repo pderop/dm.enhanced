@@ -64,6 +64,7 @@ public abstract class FilterComponent<T extends Component<T>> implements Compone
     protected volatile Object m_factory;
     protected volatile String m_factoryCreateMethod;
     protected volatile Dictionary<String, Object> m_serviceProperties;
+    protected volatile ServiceScope m_scope = ServiceScope.SINGLETON;
     private boolean m_started;
     private final List<Dependency> m_dependencies = new ArrayList<>();
 
@@ -84,6 +85,11 @@ public abstract class FilterComponent<T extends Component<T>> implements Compone
     @Override
     public String toString() {
         return m_component.toString();
+    }
+    
+    public T setScope(ServiceScope scope) {
+    	m_scope = scope;
+        return (T) this;
     }
     
     public T add(Dependency ... dependencies) {

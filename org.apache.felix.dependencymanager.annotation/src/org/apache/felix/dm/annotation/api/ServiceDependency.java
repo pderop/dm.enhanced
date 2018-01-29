@@ -46,6 +46,8 @@ import java.lang.annotation.Target;
  * (Service service, Dictionary properties)
  * (Dictionary properties, Service service)
  * (Object service)
+ * (ServiceReference<T> service)
+ * (ServiceObjects<T> service)
  * }</pre>
  * 
  * <p> For "swap" callbacks, the following method signatures are supported:
