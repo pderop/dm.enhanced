@@ -310,8 +310,6 @@ From the provider side, a new "scope" parameter has been added in the Component 
 - BUNDLE: the service will be registered as a _ServiceFFactory_
 - PROTOTYPE: the service will be registered as a _PrototypeServiceFactory_
 
-When the provider service is intantianted (because one consumer requests a service instance), then if the scope is BUNDLE or PROTOTYPE, the client _Bundle_ object will be injected in the provider implementation component instance (on an auto config class field, configurable as usual using Component.setAutoConfig method).
-
 When a consumer requests a service (using ServiceDependency), then DM will automatically dereference the service like this:
 - if the service has a _SERVICE_SCOPE_ service property matching _SCOPE_PROTOTYPE_, the DM will internally derefence the service using the _ServiceObject_ API: so, the consumer will get its own copy of the requested service instance.
 - else, DM will internally dereference the service, as before.
@@ -354,7 +352,7 @@ public static class Client2 {
     }
 }
 ```
-The two Client1/Client above will be injected with two distinct component instances for the MyService service (each MyServiceImpl instance will be invoke in its start callback).
+The two Client1/Client above will be injected with two distinct component instances for the MyService service (each MyServiceImpl instance will be invoked in its start callback).
 
 Now, if you want to control the creation of the MyService, you can then define a bind method which takes as argument a ServiceObjects<MyService> parameter like this:
 ```java
