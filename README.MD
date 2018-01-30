@@ -218,6 +218,8 @@ public class Activator extends DependencyActivatorBase {
             .setInterface(MyService.class.getName(), null)
             .setImplementation(MyServiceImpl.class)
             .add(createServiceDependency().setService(LogService.class))); // NullObject 
+    }
+}
 ```
 
 So, now, there is a new FactoryComponent interface which extends the Component interface and it contains all the various parameters used when declaring a factory pid component. So the example above becomes:
@@ -233,6 +235,8 @@ public class Activator extends DependencyActivatorBase {
             .setInterface(MyService.class.getName(), null)
             .setImplementation(MyServiceImpl.class)
             .add(createServiceDependency().setService(LogService.class))); // NullObject 
+    }
+}
 ```
 
 now, we explain what the new interfaces look like: Indeed as you can imagine, there is an issue when you extend the Component interface, because the various Component setter methods return a Component type. So, what we would like is to be able to introduce a generic type in the Component interface , and such generic type can then be used to allow the Component setter methods to return not the Component type, but instead return the aspect/adapter sub classes.
@@ -330,7 +334,7 @@ import org.apache.felix.dm.annotation.api.Component;
 import org.apache.felix.dm.annotation.api.ServiceScope;
 
 @Component(scope=ServiceScope.PROTOTYPE)
-public static class MyServiceImpl implements MyService {
+public class MyServiceImpl implements MyService {
     @Start
     void start() {
         // called on each MyService instance
@@ -344,7 +348,7 @@ import org.apache.felix.dm.annotation.api.Component;
 import org.apache.felix.dm.annotation.api.ServiceScope;
 
 @Component
-public static class Client1 {
+public class Client1 {
     @ServiceDependency
     void bind(MyService service) {
        // Client1 will be injected with its own MyService instance
@@ -352,14 +356,14 @@ public static class Client1 {
 }
 
 @Component
-public static class Client2 {
+public class Client2 {
     @ServiceDependency
     void bind(MyService service) {
            // Client2 will be injected with its own MyService instance
     }
 }
 ```
-The two Client1/Client above will be injected with two distinct component instances for the MyService service (each MyServiceImpl instance will be invoked in its start callback).
+The two Client1/Client2 above will be injected with two distinct component instances for the MyService service (each MyServiceImpl instance will be invoked in its start callback).
 
 Now, if you want to control the creation of the MyService, you can then define a bind method which takes as argument a ServiceObjects<MyService> parameter like this:
 ```java
@@ -401,12 +405,93 @@ public static class MyServiceImpl implements MyService {
 	}
 }
 ```
-
-
-
 ### Example using DM API
+This section shows an example usage of scoped services using the DM native API. 
 
-TBD
+#### Simple example
+So, here is a MyService component with PROTOTYPE scope, and each requester will get its own copy of MyService instance (the MyServiceImpl.start() method will be called for each MyServiceImpl instance):
+
+```java
+public class Activator extends DependencyActivatorBase {
+    @Override
+    public void init(BundleContext context, DependencyManager dm) throws Exception {
+        dm.add(createComponent()
+            .setScope(ServiceScope.PROTOTYPE)
+            .setInterface(MyService.class.getName(), null)
+            .setImplementation(MyServiceImpl.class));
+    }
+}
+
+public class MyServiceImpl implements MyService {
+    void start() {
+        // called on each MyService instance
+    }
+}
+```
+And here is a Client component which simply depends on the MyService service using a basic DM activator (nothing special to do):
+```java
+public class Activator extends DependencyActivatorBase {
+    @Override
+    public void init(BundleContext context, DependencyManager dm) throws Exception {
+        dm.add(createComponent()
+            .setImplementation(Client.class)
+            .add(createServiceDependency().setService(MyService.class, null).setRequired(true).setCallbacks("bind", "unbind"));
+    }
+}
+
+public class Client {
+    void bind(MyService service) {
+        // our client is injected with a specific instance of the MyService component that is created for our Client.
+        // If another component defines a service dependency on MyService, then this other component will get 
+        // its own private copy of MyService component instance
+    }
+}
+```
+#### Example using ServiceObjects API
+
+If now you want to control the creation of the MyService using raw OSGI ServiceObjects API, you can also do it like this:
+```java
+public class Client {
+    void bind(ServiceObjects<MyService> so) {
+        MyService s1 = so.getService();
+        MyService s2 = so.getService();
+        ...
+        so.ungetService(s1); // will deactivate the MyService s1 instance
+        so.ungetService(s2); // will deactivate the MyService s2 instance
+    }
+}
+```
+
+#### Note when using DM ServiceDependency from API and ServiceObjects
+
+When using DependencyManager ServiceDependency from the native API, you have to know that the ServiceDependency always internally dereference and create the scoped service using ServiceObjects.getService() method, even if you specify a ServiceObjecs parameter in your bind method.
+If now you really want to disable the auto-deref ServiceDependency (because you want to directly use the ServiceObjects API), you must then use the "setDereference(false") method on your ServiceDependency: in this way, you tell DM to never dereference internally the scoped service. Here is an example:
+
+```java
+public class Activator extends DependencyActivatorBase {
+    @Override
+    public void init(BundleContext context, DependencyManager dm) throws Exception {
+        dm.add(createComponent()
+            .setImplementation(Client.class)
+            .add(createServiceDependency()
+                 .setService(MyService.class, null).setRequired(true).setCallbacks("bind", "unbind")
+                 .setDereference(false));
+    }
+}
+
+public class Client {
+    void bind(ServiceObjects<MyService> so) {
+        MyService s1 = so.getService();
+        MyService s2 = so.getService();
+        ...
+        so.ungetService(s1); // will deactivate the MyService s1 instance
+        so.ungetService(s2); // will deactivate the MyService s2 instance
+    }
+}
+```
+In the above example, the Activator defines the ServiceDependency using the ServiceDependency.setDereference(false) method because it's the Client.bind method which will create the MyService instances manually.
+
+In the future, I will try to auto detect the signatures of the Client.bind method in order to never auto-dereference the injected service in case the bind method takes as argument a ServiceObjects (or a ServiceReference) method.
 
 # Bug fixed
 
