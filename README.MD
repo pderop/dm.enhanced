@@ -466,7 +466,7 @@ public class Client {
 
 #### Note when using DM ServiceDependency from API and ServiceObjects
 
-When using DependencyManager ServiceDependency from the native API, you have to know that the ServiceDependency always internally dereference and create the scoped service using ServiceObjects.getService() method, even if you specify a ServiceObjecs parameter in your bind method.
+When using DependencyManager ServiceDependency from the native API, you have to know that the ServiceDependency is always internally dereference and create the scoped service using ServiceObjects.getService() method, even if you specify a ServiceObjecs parameter in your bind method.
 If now you really want to disable the auto-deref ServiceDependency (because you want to directly use the ServiceObjects API), you must then use the "setDereference(false") method on your ServiceDependency: in this way, you tell DM to never dereference internally the scoped service. Here is an example:
 
 ```java
