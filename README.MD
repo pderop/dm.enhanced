@@ -435,15 +435,17 @@ public class Activator extends DependencyActivatorBase {
     public void init(BundleContext context, DependencyManager dm) throws Exception {
         dm.add(createComponent()
             .setImplementation(Client.class)
-            .add(createServiceDependency().setService(MyService.class, null).setRequired(true).setCallbacks("bind", "unbind"));
+            .add(createServiceDependency()
+                 .setService(MyService.class, null).setRequired(true).setCallbacks("bind", "unbind"));
     }
 }
 
 public class Client {
     void bind(MyService service) {
-        // our client is injected with a specific instance of the MyService component that is created for our Client.
-        // If another component defines a service dependency on MyService, then this other component will get 
-        // its own private copy of MyService component instance
+        // our client is injected with a specific instance of the MyService component 
+        // that is created for our Client.
+        // If another component defines a service dependency on MyService, then the other 
+        // component will get its own private copy of MyService component instance
     }
 }
 ```
