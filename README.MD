@@ -32,6 +32,7 @@ Essentially, the following enhancements and modifications have been done:
 - Allow ServiceDependency to auto detect the service type when the annotation is applied on a collection class field
 - removed FactoryComponentAdapterService (some attributes have been added in the Component annotation in order to declare factory pid components with the @Component annotation)
 - removed some old annotations / attributes. The attributes and annotations related to metatype have been removed since you can now use the standard metatype annotations.  if users need to old version, then they can simply use the previous 4.2.1 from [old dm annotation api][oldAnnotApi]. Notice that the dm runtime is compatible with old and new annotations version, so you can use latest dm annotation runtime and old annotation api.
+- removed "dereference" attribute in ServiceDependencyAnnotation, because we can now infer if the service dependency callbacks accepts a ServiceReference or a ServiceObjects parameter
 
 Since some incompatible changes have been made, the major version of the annotation bundle has been bumped to 5.0.0. 
 
