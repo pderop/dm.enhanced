@@ -464,10 +464,6 @@ public class Client {
     }
 }
 ```
-#### Scopde services and dynamic dependencies
-
-You can define dynamic dependencies in the "init" callback of your scoped component, as with regular singleton components. But beware that when you define a prototype (or bundle)  component, a prototype instance of your component will be created internally, and will be invoked in the init/destroy callbacks in order to allow your prototype component to define dynamic dependencies. However, the start/stop callbacks won't be invoked on the prototype instance.
-it means you should not allocate resources from the component constructor (this should only be done in the start() callback).
 
 #### Note when using DM ServiceDependency from API and ServiceObjects
 
