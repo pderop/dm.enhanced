@@ -63,6 +63,8 @@ import java.lang.annotation.Target;
  * (Component comp, ServiceReference old, Object old, ServiceReference replace, Object replace)
  * (ServiceReference old, ServiceReference replace)
  * (Component comp, ServiceReference old, ServiceReference replace)
+ * (ServiceObjects old, ServiceObjects replace)
+ * (Component comp, ServiceObjects old, ServiceObjects replace)
  * }</pre>
  * 
  * <p> When the dependency is injected on a class field, the following field types are supported:
@@ -231,18 +233,5 @@ public @interface ServiceDependency
      * Any additional service properties specified directly are merged with these.
      * @return true if dependency service properties must be published along with the service, false if not.
      */
-    boolean propagate() default false;
-    
-    /**
-     * Configures whether or not this dependency should internally obtain the service object for all tracked service references.
-     * 
-     * By default, DM internally dereferences all discovered service references (using 
-     * <code>BundleContext.getService(ServiceReference ref)</code> methods. 
-     * However, sometimes, your callback only needs the ServiceReference, and sometimes you don't want to dereference the service.
-     * So, in this case you can use the <code>dereference(false)</code> method in order to tell to DM 
-     * that it should never dereference the service dependency internally.
-     * 
-     * @return false if the service must never be dereferenced by dependency manager (internally).
-     */
-    boolean dereference() default true;
+    boolean propagate() default false;    
 }

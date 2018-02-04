@@ -574,6 +574,8 @@ public class ServiceDependencyImpl extends AbstractDependency<ServiceDependency>
             		{Component.class, ServiceReference.class, Object.class, ServiceReference.class, Object.class},
             		{ServiceReference.class, ServiceReference.class},
             		{Component.class, ServiceReference.class, ServiceReference.class},
+            		{ServiceObjects.class, ServiceObjects.class},
+            		{Component.class, ServiceObjects.class, ServiceObjects.class},
             	}, 
 	            
 	            new Supplier[][]{
@@ -586,7 +588,9 @@ public class ServiceDependencyImpl extends AbstractDependency<ServiceDependency>
             		new Supplier<?>[] {() -> m_component, () -> previous.getReference(), () -> previous.getEvent(), () -> current.getReference(), () -> current.getEvent()}, 
             		new Supplier<?>[] {() -> m_component, () -> previous.getReference(), () -> previous.getEvent(), () -> current.getReference(), () -> current.getEvent()}, 
             		new Supplier<?>[] {() -> previous.getReference(), () -> current.getReference()}, 
-            		new Supplier<?>[] {() -> m_component, () -> previous.getReference(), () -> current.getReference()}
+            		new Supplier<?>[] {() -> m_component, () -> previous.getReference(), () -> current.getReference()},
+            		new Supplier<?>[] {() -> previous.getServiceObjects(), () -> current.getServiceObjects()}, 
+            		new Supplier<?>[] {() -> m_component, () -> previous.getServiceObjects(), () -> current.getServiceObjects()}            		
             	},
             		
             	true); // log if not found

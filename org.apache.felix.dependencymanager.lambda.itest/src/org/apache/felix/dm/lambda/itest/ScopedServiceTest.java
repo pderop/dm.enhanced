@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.felix.dm.itest.api;
+package org.apache.felix.dm.lambda.itest;
 
 import java.util.Map;
 import java.util.Properties;
@@ -26,11 +26,10 @@ import org.apache.felix.dm.Component.ServiceScope;
 import org.apache.felix.dm.ComponentState;
 import org.apache.felix.dm.ComponentStateListener;
 import org.apache.felix.dm.DependencyManager;
-import org.apache.felix.dm.itest.util.Ensure;
-import org.apache.felix.dm.itest.util.TestBase;
 import org.junit.Assert;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.ServiceRegistration;
+import static org.apache.felix.dm.lambda.DependencyManagerActivator.component;
 
 /**
  * Validates a simple scoped service, which does not add some dynamic dependencies with a component init method.
@@ -46,24 +45,25 @@ public class ScopedServiceTest extends TestBase implements ComponentStateListene
     public void testPrototypeComponent() {
         DependencyManager m = getDM();     
         
-        Component provider = m.createComponent()
-        	.setScope(ServiceScope.PROTOTYPE)
-            .setFactory(this, "createServiceImpl")
-            .setInterface(Service.class.getName(), null)
-            .add(m.createServiceDependency().setRequired(true).setService(Service2.class).setCallbacks("bind", null))
-        	.add(this);
+        Component provider = component(m, c -> c.scope(ServiceScope.PROTOTYPE)
+        		.factory(this::createServiceImpl)
+        		.provides(Service.class)
+        		.listener(this)
+        		.autoAdd(false)
+        		.withSvc(Service2.class, svc -> svc.required().add(ServiceImpl::bind)));
         
-        Component service2 = m.createComponent()
-        		.setInterface(Service2.class.getName(), null)
-        		.setImplementation(new Service2() {});
+        Component service2 = component(m, c -> c
+        		.provides(Service2.class)
+        		.impl(new Service2() {})
+        		.autoAdd(false));
         
-        Component consumer1 = m.createComponent()
-            .setFactory(this, "createServiceConsumer")
-            .add(m.createServiceDependency().setService(Service.class).setRequired(true).setCallbacks("bind", "change", "unbind"));
+        Component consumer1 = component(m, c -> c
+            .factory(this::createServiceConsumer)
+            .withSvc(Service.class, svc -> svc.required().add(ServiceConsumer::bind).change(ServiceConsumer::change).remove(ServiceConsumer::unbind)));        
         
-        Component consumer2 = m.createComponent()
-            .setFactory(this, "createServiceConsumer")
-            .add(m.createServiceDependency().setService(Service.class).setRequired(true).setCallbacks("bind", "unbind"));
+        Component consumer2 = component(m, c -> c
+            .factory(this::createServiceConsumer)
+            .withSvc(Service.class, svc -> svc.required().add(ServiceConsumer::bind).remove(ServiceConsumer::unbind)));
                 
         m.add(provider);          // add provider
         m.add(consumer1);         // add first consumer

@@ -472,6 +472,7 @@ public class ComponentImpl implements Component<ComponentImpl>, ComponentContext
 
 	@Override
 	public void start() {
+		checkParamsConsistency();
 	    if (m_active.compareAndSet(false, true)) {
             getExecutor().execute(() -> {
                 m_isStarted = true;
@@ -480,6 +481,23 @@ public class ComponentImpl implements Component<ComponentImpl>, ComponentContext
 	    }
 	}
 	
+	private void checkParamsConsistency() {
+		switch (m_scope) {
+		case PROTOTYPE:
+		case BUNDLE:
+			if (m_serviceName == null) {
+				throw new IllegalStateException("No service interface specified for scoped service");
+			}
+
+			if ((!(m_componentDefinition instanceof Class)) && m_instanceFactoryCreateMethod == null) {
+				throw new IllegalStateException(
+						"The component instance must be created using either a class or a factory object when scope is not singleton.");
+			}
+
+		}
+		
+	}
+
 	@Override
 	public void stop() {           
 	    if (m_active.compareAndSet(true, false)) {
