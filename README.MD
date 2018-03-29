@@ -294,7 +294,7 @@ Moreover, you can define a Dictionary parameter as the first argument in the upd
 
 ```java
 public class MyComponent {
-    void updated(Dictionary<String, Object> MyConfig1 cnf1, MyConfig2 cnf2) { ... }
+    void updated(Dictionary<String, Object> rawConfig, MyConfig1 cnf1, MyConfig2 cnf2) { ... }
 }
 ```
 so, the new signatures for the updated callbacks are now the following (for both ConfigurationDependency and Factory Component):
@@ -312,7 +312,7 @@ sometimes, you want to use OSGI ServiceObjects, which allows to control the scop
 
 From the provider side, a new "scope" parameter has been added in the Component interface, allowing to define the scope of the registered service, and the parameter will have three enum values: SINGLETON, BUNDLE, PROTOTYPE
 - SINGLETON: it's as before: your registered service is a singleton
-- BUNDLE: the service will be registered as a _ServiceFFactory_
+- BUNDLE: the service will be registered as a _ServiceFactory_
 - PROTOTYPE: the service will be registered as a _PrototypeServiceFactory_
 
 Scoped Services are supported by all kind of DM service components:
