@@ -37,7 +37,7 @@
 # configure release and baseline repos
 #
 -releaserepo: Release
--baselinerepo: Release
+-baselinerepo: Repository
 -baseline: *
 
 #

@@ -33,7 +33,7 @@ buildscript {
 }
 
 // Our release number, which has to be monotonically incremented each time we make a new release.
-ext.dmRelease = "r11"
+ext.dmRelease = "r12"
 
 // Our Apache svn Staging repo
 ext.svnStagingPath = "https://dist.apache.org/repos/dist/dev/felix"
@@ -92,7 +92,7 @@ task makeStaging {
     logger.lifecycle("    Packaging source distributions.")
     def topdir="org.apache.felix.dependencymanager-" + dmRelease
     ant.zip(destfile: "staging/"+topdir+'-src.zip') {
-		zipfileset(dir: '../cnf', prefix: topdir+"-src/cnf", includes: ".project,.classpath,src/**,*.bnd,ext/**")
+		zipfileset(dir: '../cnf', prefix: topdir+"-src/cnf", includes: ".project,.classpath,src/**,*.bnd,*.mvn,ext/**")
 		zipfileset(dir: '..', prefix: topdir+"-src", includes: '*.gradle,*.properties')
 		zipfileset(dir: 'resources/src', prefix: topdir+"-src", includes: '*')
 		new File('.').eachFile { 
@@ -110,10 +110,8 @@ task makeStaging {
     logger.lifecycle("    Packaging binary dependencies.")    
     ant.zip(destfile: "staging/"+topdir+"-deps.zip") {
     	ant.zipfileset(dir: '..', prefix: topdir+"-src", includes: 'gradlew')
-    	ant.zipfileset(dir: '../gradle', prefix: topdir+"-src/gradle", includes: '**')    	
+    	ant.zipfileset(dir: '../.gradle-wrapper', prefix: topdir+"-src/.gradle-wrapper", includes: '**')
 		ant.zipfileset(dir: 'resources/deps', prefix: topdir+"-src", includes: '*')
-		ant.zipfileset(dir: '../cnf', prefix: topdir+"-src/cnf",
-		    		   includes: 'buildrepo/**,localrepo/**,releaserepo/**,nonosgi-repo/**,plugins/**,gradle/**')
     }
 
     // Package binaries as a simple collection of bundles. We use same license files as for src distrib.
