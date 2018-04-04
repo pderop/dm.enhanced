@@ -23,6 +23,7 @@ import org.apache.felix.dm.itest.util.TestBase;
 import org.apache.felix.dm.runtime.itest.components.ComponentDMPropertyTypeAnnotation;
 import org.apache.felix.dm.runtime.itest.components.ComponentDMPropertyTypeArrayAnnotation;
 import org.apache.felix.dm.runtime.itest.components.ComponentDMSingleValuedPropertyTypeAnnotation;
+import org.apache.felix.dm.runtime.itest.components.ComponentJaxrsResourceAnnotation;
 import org.apache.felix.dm.runtime.itest.components.ComponentPropertyTypeWithDictionaryPassedInUpdateCallback;
 import org.apache.felix.dm.runtime.itest.components.FactoryPidWithPropertyTypeAnnotation;
 import org.apache.felix.dm.runtime.itest.components.JaxrsComponentPropertyTypeAnnotation;
@@ -70,6 +71,14 @@ public class ComponentPropertyTypeAnnotationTest extends TestBase {
         e.ensure();
     }
     
+    public void testJaxrsPropertyTypes() throws Throwable {
+        Ensure e = new Ensure();
+        ServiceRegistration sr1 = register(e, ComponentJaxrsResourceAnnotation.ENSURE);
+        e.waitForStep(2, 5000);
+        sr1.unregister();
+        e.ensure();
+    }
+
     public void testCustomReconfigurablePropertyTypes() throws Throwable {
         Ensure e = new Ensure();
         ServiceRegistration sr1 = register(e, ReconfigurableComponentPropertyTypeWithOptionalConfigAnnotation.ENSURE);
