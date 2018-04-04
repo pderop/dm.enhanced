@@ -1623,12 +1623,12 @@ public class AnnotationCollector extends ClassDataCollector
     
 	private final class ComponentPropertyTypeDataCollector extends ClassDataCollector {
 		private final MultiMap<String,String>				props			= new MultiMap<String,String>();
-		private final Map<String,Class>					propertyTypes	= new HashMap<>();
+		private final Map<String,Class>					    propertyTypes	= new HashMap<>();
 		private int											hasNoDefault	= 0;
 		private boolean										hasValue		= false;
 		private FieldDef									prefixField		= null;
 		private TypeRef										typeRef			= null;
-		private final EntryWriter m_componentWriter;
+		private final EntryWriter 							m_componentWriter;
 	
 		private ComponentPropertyTypeDataCollector(EntryWriter componentWriter) {
 		    m_componentWriter = componentWriter;
@@ -1720,11 +1720,11 @@ public class AnnotationCollector extends ClassDataCollector
 					Object element = Array.get(value, i);
 					valueToProperty(name, element, isClass, typeClass);
 				}
-				if (len == 1) {
-					// To make sure the output is an array, we must make
-					// sure there is more than one entry
-					props.add(name, MARKER);
-				}
+//				if (len == 1) {
+//					// To make sure the output is an array, we must make
+//					// sure there is more than one entry
+//					props.add(name, MARKER);
+//				}
 			} else {
 				valueToProperty(name, value, isClass, typeClass);
 			}

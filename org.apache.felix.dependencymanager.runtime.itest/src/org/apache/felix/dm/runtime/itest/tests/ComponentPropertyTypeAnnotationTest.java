@@ -21,6 +21,7 @@ package org.apache.felix.dm.runtime.itest.tests;
 import org.apache.felix.dm.itest.util.Ensure;
 import org.apache.felix.dm.itest.util.TestBase;
 import org.apache.felix.dm.runtime.itest.components.ComponentDMPropertyTypeAnnotation;
+import org.apache.felix.dm.runtime.itest.components.ComponentDMPropertyTypeArrayAnnotation;
 import org.apache.felix.dm.runtime.itest.components.ComponentDMSingleValuedPropertyTypeAnnotation;
 import org.apache.felix.dm.runtime.itest.components.ComponentPropertyTypeWithDictionaryPassedInUpdateCallback;
 import org.apache.felix.dm.runtime.itest.components.FactoryPidWithPropertyTypeAnnotation;
@@ -53,6 +54,14 @@ public class ComponentPropertyTypeAnnotationTest extends TestBase {
         e.ensure();
     }
     
+    public void testCustomPropertyTypesArray() throws Throwable {
+        Ensure e = new Ensure();
+        ServiceRegistration sr1 = register(e, ComponentDMPropertyTypeArrayAnnotation.ENSURE);
+        e.waitForStep(4, 5000);
+        sr1.unregister();
+        e.ensure();
+    }
+
     public void testSingleValuedPropertyTypes() throws Throwable {
         Ensure e = new Ensure();
         ServiceRegistration sr1 = register(e, ComponentDMSingleValuedPropertyTypeAnnotation.ENSURE);
