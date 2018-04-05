@@ -100,7 +100,6 @@ You can also define multiple property type annotations, and possibly single valu
  public class AppServletContext extends ServletContextHelper {
  }
    ```
-   
 Same example as above, but also using configuration admin service in order to override default service properties: Here, as in OSGi r7 declarative service, you can define a callback method which accepts as arguments all (or some of) the defined property types:
 ```java
  @Component
@@ -128,6 +127,26 @@ The following is the same example as above, but this time the configuration call
      }
  }
  ```
+
+Empty Marker annotations can also be used: when you define an empty annotation, it will be mapped to a java.lang.Boolean property type with Boolean.TRUE value. For example, the following component
+will be registered with "osgi.jaxrs.resource" service property with Boolean.TRUE value:
+
+```java
+ @PropertyType
+ @interface JaxrsResource { // will map to "osgi.jaxrs.resource" property name
+     String PREFIX="osgi.";
+ }
+ 
+ @Component(provides = MyResource.class)
+ @JaxrsResource     
+ public class MyResource {
+    @Path(“foo”)
+    @GET
+    public void getFoo() {
+        ...
+    }
+}
+   ```
 
 User defined property types can also be applied on factory components, for example, in the following, the service properties are declared using the user-defined annotations (they will be overriden from the factory configuratin, if present in the config):
 ```java
