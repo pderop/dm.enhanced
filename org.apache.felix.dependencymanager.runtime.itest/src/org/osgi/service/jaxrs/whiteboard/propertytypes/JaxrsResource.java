@@ -52,5 +52,5 @@ public @interface JaxrsResource {
 	 * @return The JAX-RS resource value.
 	 * @see org.osgi.service.jaxrs.whiteboard.JaxRSWhiteboardConstants#JAX_RS_RESOURCE
 	 */
-	String value() default "true";
+	//String value() default "true";
 }

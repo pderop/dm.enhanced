@@ -1626,6 +1626,7 @@ public class AnnotationCollector extends ClassDataCollector
 		private final Map<String,Class>					    propertyTypes	= new HashMap<>();
 		private int											hasNoDefault	= 0;
 		private boolean										hasValue		= false;
+		private boolean										hasMethods 		= false;
 		private FieldDef									prefixField		= null;
 		private TypeRef										typeRef			= null;
 		private final EntryWriter 							m_componentWriter;
@@ -1665,6 +1666,7 @@ public class AnnotationCollector extends ClassDataCollector
 			if (defined.isStatic()) {
 				return;
 			}
+			hasMethods = true;
 			if (defined.getName().equals("value")) {
 				hasValue = true;
 			} else {
@@ -1747,6 +1749,14 @@ public class AnnotationCollector extends ClassDataCollector
 				}
 				m_logger.debug("PropertyType: classEnd prefix = %s", prefix);
 			}
+			
+			if (!hasMethods) {
+				// This is a marker annotation so treat it like it is a single
+				// element annotation with a value of Boolean.TRUE
+				hasValue = true;
+				handleValue("value", Boolean.TRUE, false, Boolean.class);
+			}
+			
 			String singleElementAnnotation = null;
 			if (hasValue && (hasNoDefault == 0)) {
 				m_logger.debug("PropertyType: classEnd hasValue && hasNoDefault == 0");

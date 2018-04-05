@@ -45,7 +45,8 @@ public class ComponentJaxrsResourceAnnotation {
         @ServiceDependency
         void bind(MyComponent comp, Map<String, Object> props) {
         	m_ensure.step(1);
-        	if ("true".equals(props.get(JaxRSWhiteboardConstants.JAX_RS_RESOURCE))) {
+        	Object value = props.get(JaxRSWhiteboardConstants.JAX_RS_RESOURCE);        	
+        	if (Boolean.TRUE.equals(value)) {
         		m_ensure.step(2);
         	}
         }
