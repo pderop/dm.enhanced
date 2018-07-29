@@ -46,7 +46,7 @@ public class ScopedServiceTest extends TestBase implements ComponentStateListene
         DependencyManager m = getDM();     
         
         Component provider = component(m, c -> c.scope(ServiceScope.PROTOTYPE)
-        		.factory(this::createServiceImpl)
+        		.factory(this, "createServiceImpl")
         		.provides(Service.class)
         		.listener(this)
         		.autoAdd(false)
@@ -139,7 +139,7 @@ public class ScopedServiceTest extends TestBase implements ComponentStateListene
         volatile Bundle m_bundle; // bundle requesting the service
         volatile ServiceRegistration<Service> m_registration; // registration of the requested service
 		volatile Service2 m_service2;
-        
+        		
         void bind(Service2 service2) {
         	m_service2 = service2;
         }

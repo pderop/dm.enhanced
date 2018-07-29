@@ -66,6 +66,7 @@ public abstract class AbstractBuilder
             c.setAutoConfig(ServiceRegistration.class, Boolean.FALSE);
             c.setAutoConfig(DependencyManager.class, Boolean.FALSE);
             c.setAutoConfig(Component.class, Boolean.FALSE);
+            c.setAutoConfig(Bundle.class, Boolean.FALSE);
         }
 
         // See if BundleContext must be auto configured.

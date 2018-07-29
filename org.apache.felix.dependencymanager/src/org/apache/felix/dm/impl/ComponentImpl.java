@@ -27,7 +27,6 @@ import static org.apache.felix.dm.ComponentState.STOPPING;
 import static org.apache.felix.dm.ComponentState.TRACKING_OPTIONAL;
 import static org.apache.felix.dm.ComponentState.WAITING_FOR_REQUIRED;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -84,12 +83,12 @@ public class ComponentImpl implements Component<ComponentImpl>, ComponentContext
 			.newProxyInstance(ComponentImpl.class.getClassLoader(),
 					new Class[] { ServiceRegistration.class },
 					new DefaultNullObject());
-	
-	/**
+	        	
+    /**
 	 * Constant Used to get empty constructor by reflection. 
-	 */
-    private static final Class<?>[] VOID = new Class[] {};
-    
+     */
+    private static final CallbackTypeDef VOID = new CallbackTypeDef(new Class[][] {{}}, new Object[][] {{}});
+
     /**
      * Default Component Executor, which is by default single threaded. The first thread which schedules a task
      * is the master thread and will execute all tasks that are scheduled by other threads at the time the master
@@ -295,6 +294,9 @@ public class ComponentImpl implements Component<ComponentImpl>, ComponentContext
      */
     private ComponentState m_lastStateDeliveredToListeners = ComponentState.INACTIVE;
 
+    /**
+     * Component service scope.
+     */
 	private volatile ServiceScope m_scope = Component.ServiceScope.SINGLETON;
 
     /**
@@ -343,17 +345,20 @@ public class ComponentImpl implements Component<ComponentImpl>, ComponentContext
                     .setComposition(m_compositionManager, m_compositionManagerGetMethod) // if not set, no effect
                     .setCallbacks(m_callbackInstance, m_callbackInit, m_callbackStart, m_callbackStop, m_callbackDestroy); // if not set, no effect
         	clone.setThreadPool(m_executor);
+        	clone.setAutoConfig(ServiceRegistration.class, false); // don't inject the ServiceRegistration for the moment
         	configureAutoConfigState(clone, ComponentImpl.this);
-        	copyDependencies(getDependencies(), clone);    
-        	m_listeners.forEach(clone::add);
-        	clone.instantiateComponent();
-        	clone.autoConfigureImplementation(ServiceRegistration.class, registration);
-        	Boolean bundleAutoConfig = m_autoConfig.get(Bundle.class);
-        	boolean injectBundle = bundleAutoConfig == null ? true : bundleAutoConfig;
-        	if (injectBundle) {
-        		clone.setAutoConfig(Bundle.class, true);
-        		clone.autoConfigureImplementation(Bundle.class, bundle);
+        	copyDependencies(getDependencies(), clone);   
+        	clone.setCallbacks(null, m_callbackStart, m_callbackStop, null); // don't invoke init/destroy callbacks on clones (we already have called ini on the prototype instance)
+        	m_listeners.forEach(clone::add);        	        	                    	
+        	int ctorIndex = clone.instantiateComponent(createScopedComponentConstructorArgs(bundle, registration));  
+        	// ctorIndex == -1 means we have used a factory to create the component
+        	// if ctorIndex == 0 mneas we have used the first constructor (the one used to inject service registration and bundles
+        	if (ctorIndex != 0) { 
+        		// we don't have injected the bundle and service registration in the constructor, so inject them in the class fields
+        		autoConfigField(clone, ServiceRegistration.class, registration);
+        		autoConfigField(clone, Bundle.class, bundle);
         	}
+        	
         	clone.start();
         	Object instance = clone.getInstance();
         	if (instance == null) {
@@ -369,9 +374,15 @@ public class ComponentImpl implements Component<ComponentImpl>, ComponentContext
             if (clone != null) {
             	clone.stop();
             }
-        }        
+        }       
+        
+        private void autoConfigField(ComponentImpl clone, Class<?> type, Object autoConfig) {
+        	Boolean doAutoConfig = m_autoConfig.get(type);
+        	clone.setAutoConfig(type, doAutoConfig == null ? true : doAutoConfig);
+        	clone.autoConfigureImplementation(type, autoConfig);
+        }
     }
-
+    
     class ComponentServiceFactory extends FactoryBase implements ServiceFactory<Object> {
     }
 
@@ -400,6 +411,7 @@ public class ComponentImpl implements Component<ComponentImpl>, ComponentContext
         m_autoConfig.put(ServiceRegistration.class, Boolean.TRUE);
         m_autoConfig.put(DependencyManager.class, Boolean.TRUE);
         m_autoConfig.put(Component.class, Boolean.TRUE);
+        m_autoConfig.put(Bundle.class, Boolean.TRUE);
         m_callbackInit = "init";
         m_callbackStart = "start";
         m_callbackStop = "stop";
@@ -625,8 +637,7 @@ public class ComponentImpl implements Component<ComponentImpl>, ComponentContext
         invokeCallbackMethod(instances, methodName, signatures, parameters, true);
     }
 
-    public void invokeCallbackMethod(Object[] instances, String methodName, Class<?>[][] signatures,
-        Object[][] parameters, boolean logIfNotFound) {
+    public void invokeCallbackMethod(Object[] instances, String methodName, Class<?>[][] signatures, Object[][] parameters, boolean logIfNotFound) {
         boolean callbackFound = false;
         for (int i = 0; i < instances.length; i++) {
             try {
@@ -639,7 +650,7 @@ public class ComponentImpl implements Component<ComponentImpl>, ComponentContext
             catch (InvocationTargetException e) {
                 // the method itself threw an exception, log that
                 m_logger.log(Logger.LOG_ERROR, "Invocation of '" + methodName + "' failed.", e.getCause());
-                callbackFound |= true; // we have found the callback and we don't want to log a "callback not found" error
+                callbackFound |= true;
             }
             catch (Throwable e) { // IllegalArgumentException (wrong params passed to the method), or IllegalAccessException (method can't be accessed)
                 m_logger.log(Logger.LOG_ERROR, "Could not invoke '" + methodName + "'.", e);
@@ -649,14 +660,7 @@ public class ComponentImpl implements Component<ComponentImpl>, ComponentContext
         // If the callback is not found, we don't log if the method is on an AbstractDecorator.
         // (Aspect or Adapter are not interested in user dependency callbacks)        
         if (logIfNotFound && ! callbackFound && ! (getInstance() instanceof AbstractDecorator)) {
-            if (m_logger == null) {
-                System.out.println("\"" + methodName + "\" callback not found on component instances "
-                    + Arrays.toString(instances));
-            } else {
-                m_logger.log(LogService.LOG_ERROR, "\"" + methodName + "\" callback not found on component instances "
-                    + Arrays.toString(instances));
-            }
-
+        	m_logger.log(LogService.LOG_ERROR, "\"" + methodName + "\" callback not found on component instances " + Arrays.toString(instances));
         }
     }
     
@@ -683,13 +687,7 @@ public class ComponentImpl implements Component<ComponentImpl>, ComponentContext
         // If the callback is not found, we don't log if the method is on an AbstractDecorator.
         // (Aspect or Adapter are not interested in user dependency callbacks)        
         if (logIfNotFound && ! callbackFound && ! (getInstance() instanceof AbstractDecorator)) {
-            if (m_logger == null) {
-                System.out.println("\"" + methodName + "\" callback not found on component instances "
-                    + Arrays.toString(instances));
-            } else {
-                m_logger.log(LogService.LOG_ERROR, "\"" + methodName + "\" callback not found on component instances "
-                    + Arrays.toString(instances));
-            }
+        	m_logger.log(LogService.LOG_ERROR, "\"" + methodName + "\" callback not found on component instances " + Arrays.toString(instances));
         }    	
     }
 
@@ -858,8 +856,6 @@ public class ComponentImpl implements Component<ComponentImpl>, ComponentContext
         return null;
     }
     
-
-    
     public String getName() {
         StringBuilder sb = new StringBuilder();
         Object serviceName = m_serviceName;
@@ -1006,73 +1002,139 @@ public class ComponentImpl implements Component<ComponentImpl>, ComponentContext
         return m_stopwatch;
     }
         
+    /**
+     * Instantiates the component. The method signatures used when using a component constructor or a factory "create" method
+     * depends on the component scope:
+     * 
+     * 1) For SINGLETON scope:
+     * 
+     * When no factory is used, we always use the component default public constructor: ()
+     * When a factory "create" method is used, we try the factory.create with "create()" or "create(Component)" signatures
+     * 
+     * 2) For other scopes (PROTOTYPE,BUNDLE):
+     * 
+     * When no factory is used, we try to instantiate the component using the following constructors:
+     *     (Bundle, ServiceRegistration)
+     *     (Bundle, ServiceRegistration, BundleContext)
+     *     ()
+     *     
+     * When a factory.create method is used, we try the following factory "create" method signatures:
+     * 	   create(Component, Bundle, ServiceRegistration)
+     * 	   create(Component)
+     * 	   create()
+     */
     @Override
     public ComponentContext instantiateComponent() {
-        m_logger.debug("instantiating component.");
+    	CallbackTypeDef ctorArgs = null;
+    	
+    	switch (m_scope) {
+    	case SINGLETON:
+    		// When a component scope is singleton, we'll use the following constructor or factory "create" method signatures:
+    		ctorArgs = VOID;    			
+    		break;
+    		
+    	case PROTOTYPE:
+    	case BUNDLE:
+    		// for scoped components, If no init callback is defined, we don't instantiate the prototype instance with the real component class, 
+    		// we use a dymmy prototype instance object because there is no need to instantiate the real component prototype object (since there is no init method to invoke).
+			if (m_callbackInit == null) {
+				m_componentInstance = InvocationUtil.PROTOTYPE_INSTANCE;
+				return this;
+			}
+			
+    		// When a component scope is BUNDLE|PROTOTYPE, we'll use the following constructor or factory "create" method signatures:
+    		ctorArgs = createScopedComponentConstructorArgs(null, null);
+    		break;
+    		
+    		default:
+    			throw new IllegalStateException("Invalid scope: " + m_scope);
+		}
 
-        // TODO add more complex factory instantiations of one or more components in a composition here
-        if (m_componentInstance == null) {
-            if (m_componentDefinition instanceof Class) {
-                try {
-                    m_componentInstance = createInstance((Class<?>) m_componentDefinition);
-                }
-                catch (Exception e) {
-                    m_logger.log(Logger.LOG_ERROR, "Could not instantiate class " + m_componentDefinition, e);
-                }
-            }
-            else {
-                if (m_instanceFactoryCreateMethod != null) {
-                    Object factory = null;
-                    if (m_instanceFactory != null) {
-                        if (m_instanceFactory instanceof Class) {
-                            try {
-                                factory = createInstance((Class<?>) m_instanceFactory);
-                            }
-                            catch (Exception e) {
-                                m_logger.log(Logger.LOG_ERROR, "Could not create factory instance of class " + m_instanceFactory + ".", e);
-                            }
-                        }
-                        else {
-                            factory = m_instanceFactory;
-                        }
-                    }
-                    else {
-                        // TODO review if we want to try to default to something if not specified
-                        // for now the JavaDoc of setFactory(method) reflects the fact that we need
-                        // to review it
-                    }
-                    if (factory == null) {
-                        m_logger.log(Logger.LOG_ERROR, "Factory cannot be null.");
-                    }
-                    else {
-                        try {
-                            m_componentInstance = InvocationUtil.invokeMethod(factory, 
-                                factory.getClass(), m_instanceFactoryCreateMethod, 
-                                new Class[][] {{}, {Component.class}}, new Object[][] {{}, {this}}, false);
-                        }
-                        catch (Exception e) {
-                            m_logger.log(Logger.LOG_ERROR, "Could not create service instance using factory " + factory + " method " + m_instanceFactoryCreateMethod + ".", e);
-                        }
-                    }
-                }
-            }
-            
-            if (m_componentInstance == null) {
-                m_componentInstance = m_componentDefinition;
-            }
-            
-            // configure the bundle context
-            autoConfigureImplementation(BundleContext.class, m_context);
-            autoConfigureImplementation(ServiceRegistration.class, NULL_REGISTRATION);
-            autoConfigureImplementation(DependencyManager.class, m_manager);
-            autoConfigureImplementation(Component.class, this);
-        }
-        return this;
+    	// Create the factory "create" method signatures types
+    	instantiateComponent(ctorArgs);
+    	return this;
     }    
     
-   // ---------------------- Package/Private methods ---------------------------       
+    // ---------------------- Package/Private methods ---------------------------       
 
-    private String toString(Object implementation) {
+    /**
+     * Creates a constructor argument descritor for a scoped component (having scope=BUNDLE|PROTOTYPE)
+     */
+    private CallbackTypeDef createScopedComponentConstructorArgs(Bundle b, ServiceRegistration sr) {
+    	return new CallbackTypeDef(
+    		new Class[][]  {{Bundle.class, ServiceRegistration.class}, {Bundle.class, ServiceRegistration.class, BundleContext.class}, {}},
+            new Object[][] {{b,sr}, {b,sr, m_context}, {}});
+    }
+    
+    /**
+     * Creates the component instance.
+     * @param ctorArgs the constructor argument signatures
+     * @return the index of the constructor argument signatures that was used when creating the component. -1 means the component has been created using a factory "create" method.
+     */
+    private int instantiateComponent(CallbackTypeDef ctorArgs) {
+		m_logger.debug("instantiating component.");
+		int ctorArgsUsed = -1;
+		
+		if (m_componentInstance == null) {
+			if (m_componentDefinition instanceof Class) {
+				try {
+					InvocationUtil.ComponentInstance ci = InvocationUtil.createInstance((Class<?>) m_componentDefinition, ctorArgs);
+					m_componentInstance = ci.m_instance;
+					ctorArgsUsed = ci.m_ctorIndex;
+				} catch (Exception e) {
+					m_logger.log(Logger.LOG_ERROR, "Could not instantiate class " + m_componentDefinition, e);
+				}
+			} else {
+				if (m_instanceFactoryCreateMethod != null) {
+					Object factory = null;
+					if (m_instanceFactory != null) {
+						if (m_instanceFactory instanceof Class) {
+							try {
+								InvocationUtil.ComponentInstance ci = InvocationUtil.createInstance((Class<?>) m_instanceFactory, VOID);
+								factory = ci.m_instance;
+							} catch (Exception e) {
+								m_logger.log(Logger.LOG_ERROR,
+										"Could not create factory instance of class " + m_instanceFactory + ".", e);
+							}
+						} else {
+							factory = m_instanceFactory;
+						}
+					} else {
+						// TODO review if we want to try to default to something if not specified
+						// for now the JavaDoc of setFactory(method) reflects the fact that we need
+						// to review it
+					}
+					if (factory == null) {
+						m_logger.log(Logger.LOG_ERROR, "Factory cannot be null.");
+					} else {
+						try {
+					    	CallbackTypeDef factoryArgs = new CallbackTypeDef(
+					    			new Class[][] {{}, {Component.class}}, 
+					    			new Object[][] {{}, {this}});
+							m_componentInstance = InvocationUtil.invokeMethod(factory, factory.getClass(),
+																 m_instanceFactoryCreateMethod, factoryArgs.m_sigs, factoryArgs.m_args, false);
+						} catch (Exception e) {
+							m_logger.log(Logger.LOG_ERROR, "Could not create service instance using factory " + factory
+									+ " method " + m_instanceFactoryCreateMethod + ".", e);
+						}
+					}
+				}
+			}
+			
+			if (m_componentInstance == null) {
+				m_componentInstance = m_componentDefinition;
+			}
+
+			// configure the bundle context
+			autoConfigureImplementation(BundleContext.class, m_context);
+			autoConfigureImplementation(ServiceRegistration.class, NULL_REGISTRATION);
+			autoConfigureImplementation(DependencyManager.class, m_manager);
+			autoConfigureImplementation(Component.class, this);
+		}
+		return ctorArgsUsed;
+    }
+         
+	private String toString(Object implementation) {
         if (implementation instanceof Class) {
             return (((Class<?>) implementation).getName());
         } else {
@@ -1217,7 +1279,7 @@ public class ComponentImpl implements Component<ComponentImpl>, ComponentContext
 			eventList.clear();
 		});
 	}
-
+	
 	private void invokeStart() {
 		// Only invoke start callback for singleton components.
 		// We don't invoke start callbacks for components with scope=prototype or bundle because
@@ -1237,8 +1299,8 @@ public class ComponentImpl implements Component<ComponentImpl>, ComponentContext
 			m_startCalled = false;
 		}
 	}
-
-	/**
+    
+    /**
      * Sets the m_handlingChange flag that indicates if the state machine is currently running the handleChange method.
      */
     private void handlingChange(boolean transiting) {
@@ -1450,7 +1512,10 @@ public class ComponentImpl implements Component<ComponentImpl>, ComponentContext
      */
     private void updateInstance(DependencyContext dc, Event event, boolean update, boolean add) {
         if (dc.isAutoConfig()) {
-            updateImplementation(dc.getAutoConfigType(), dc, dc.getAutoConfigName(), event, update, add);
+        	// don't inject anything if the component instance is a hidden prototype instance
+        	if (m_componentInstance != InvocationUtil.PROTOTYPE_INSTANCE) {
+        		updateImplementation(dc.getAutoConfigType(), dc, dc.getAutoConfigName(), event, update, add);
+        	}
         }
         if (dc.isPropagated() && m_registration != null) {
             m_registration.setProperties(calculateServiceProperties());
@@ -1553,7 +1618,7 @@ public class ComponentImpl implements Component<ComponentImpl>, ComponentContext
 			.filter(dc -> dependencyPropagated.test(dc) && dc.overrideServiceProperties())
 			.forEach(dc -> addTo(properties, dc.getProperties()));
 
-                return properties; // FELIX-5683: now we never return null
+		return properties; // FELIX-5683: now we never return null
 	}
 
     private void addTo(Dictionary<String, Object> properties, Dictionary<?, Object> additional) {
@@ -1655,6 +1720,11 @@ public class ComponentImpl implements Component<ComponentImpl>, ComponentContext
 	 * invoke the bind method if the component start callback has already been called. 
 	 */
 	private void invokeCallback(DependencyContext dc, EventType type, Event event) {
+    	// don't inject anything if the component instance is a hidden prototype instance
+    	if (m_componentInstance == InvocationUtil.PROTOTYPE_INSTANCE) {
+    		return;
+    	}
+    	
 		if (! dc.isRequired() && ! m_startCalled) {
 			return;
 		}
@@ -1731,12 +1801,6 @@ public class ComponentImpl implements Component<ComponentImpl>, ComponentContext
         }
     }
     
-    private Object createInstance(Class<?> clazz) throws SecurityException, NoSuchMethodException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-		Constructor<?> constructor = clazz.getConstructor(VOID);
-		constructor.setAccessible(true);
-        return constructor.newInstance();
-    }
-
 	private void notifyListeners(ComponentState state) {
 		if (m_scope == ServiceScope.SINGLETON) {
 			m_lastStateDeliveredToListeners = state;
@@ -1766,6 +1830,11 @@ public class ComponentImpl implements Component<ComponentImpl>, ComponentContext
      * @param instanceName the name of the instance to fill in, or <code>null</code> if not used
      */
     void configureImplementation(Class<?> clazz, Object instance, String fieldName) {
+    	// don't inject anything if the component instance is a hidden prototype instance
+    	if (m_componentInstance == InvocationUtil.PROTOTYPE_INSTANCE) {
+    		return;
+    	}
+
         Object[] targets = getInstances();
         if (! FieldUtil.injectField(targets, fieldName, clazz, instance, m_logger) && fieldName != null) {
             // If the target is an abstract decorator (i.e: an adapter, or an aspect), we must not log warnings
@@ -1778,6 +1847,11 @@ public class ComponentImpl implements Component<ComponentImpl>, ComponentContext
     }
 
     private void configureImplementation(Class<?> clazz, DependencyContext dc, String fieldName) {
+    	// don't inject anything if the component instance is a hidden prototype instance
+    	if (m_componentInstance == InvocationUtil.PROTOTYPE_INSTANCE) {
+    		return;
+    	}
+
         Object[] targets = getInstances();
         if (! FieldUtil.injectDependencyField(targets, fieldName, clazz, dc, m_logger) && fieldName != null) {
             // If the target is an abstract decorator (i.e: an adapter, or an aspect), we must not log warnings
@@ -1801,9 +1875,7 @@ public class ComponentImpl implements Component<ComponentImpl>, ComponentContext
      * @param add true if the dependency service has been added, false if it has been removed. This flag is 
      *        ignored if the "update" flag is true (because the dependency properties are just being updated).
      */
-    private void updateImplementation(Class<?> clazz, DependencyContext dc, String fieldName, Event event, boolean update,
-        boolean add)
-    {
+    private void updateImplementation(Class<?> clazz, DependencyContext dc, String fieldName, Event event, boolean update, boolean add) {
         Object[] targets = getInstances();
         FieldUtil.updateDependencyField(targets, fieldName, update, add, clazz, event, dc, m_logger);
     }
@@ -1887,7 +1959,6 @@ public class ComponentImpl implements Component<ComponentImpl>, ComponentContext
     private void copyDependencies(List<DependencyContext> dependencies, Component component) {
         for (DependencyContext dc : dependencies) {
             DependencyContext copy = dc.createCopy();
-
             component.add(copy);
         }
     }

@@ -27,7 +27,6 @@
 	${configadmin},\
 	${eventadmin},\
 	${webconsole},\
-	${bndlib},\
 	org.apache.felix.dependencymanager;version=latest,\
 	org.apache.felix.dependencymanager.shell;version=latest,\
 	org.apache.felix.dependencymanager.runtime;version=latest,\

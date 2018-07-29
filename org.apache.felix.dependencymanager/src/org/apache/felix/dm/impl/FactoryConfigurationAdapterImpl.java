@@ -296,8 +296,14 @@ public class FactoryConfigurationAdapterImpl extends FilterComponent<FactoryComp
             Object[] instances = getUpdateCallbackInstances(service);
             for (Object instance : instances) {
                 try {
-                    InvocationUtil.invokeCallbackMethod(instance, m_update, callbackInfo.m_sigs, callbackInfo.m_args);
-                    callbackFound |= true;
+                	// Only inject if the component instance is not a prototype instance
+                	if (instance != InvocationUtil.PROTOTYPE_INSTANCE) {
+                		InvocationUtil.invokeCallbackMethod(instance, m_update, callbackInfo.m_sigs, callbackInfo.m_args);
+                		callbackFound |= true;
+                	} else {
+                		// No need to scan anymore, we are on a prototype instance which must not be injected
+                		return;
+                	}
                 }
                 catch (NoSuchMethodException e) {
                     // if the method does not exist, ignore it

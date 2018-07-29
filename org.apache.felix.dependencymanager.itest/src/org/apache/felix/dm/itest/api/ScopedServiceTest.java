@@ -36,10 +36,10 @@ import org.osgi.framework.ServiceRegistration;
  * Validates a simple scoped service, which does not add some dynamic dependencies with a component init method.
  */
 public class ScopedServiceTest extends TestBase implements ComponentStateListener {
-	final Ensure m_e = new Ensure();
+	final static Ensure m_e = new Ensure();
 	final Ensure.Steps m_listenerSteps = new Ensure.Steps(1, 4, 11);
-	final Ensure.Steps m_serviceImplStartSteps = new Ensure.Steps(2, 5, 12);
-	final Ensure.Steps m_serviceImplStopSteps = new Ensure.Steps(8, 10, 16);
+	final static Ensure.Steps m_serviceImplStartSteps = new Ensure.Steps(2, 5, 12);
+	final static Ensure.Steps m_serviceImplStopSteps = new Ensure.Steps(8, 10, 16);
     final Ensure.Steps m_serviceConsumerBindSteps = new Ensure.Steps(3, 6, 13);
     final Ensure.Steps m_serviceConsumerUnbindSteps = new Ensure.Steps(7, 9, 15);
 
@@ -48,7 +48,9 @@ public class ScopedServiceTest extends TestBase implements ComponentStateListene
         
         Component provider = m.createComponent()
         	.setScope(ServiceScope.PROTOTYPE)
-            .setFactory(this, "createServiceImpl")
+        	.setAutoConfig(Bundle.class, false)
+        	.setAutoConfig(ServiceRegistration.class, false)
+        	.setImplementation(ServiceImpl.class)
             .setInterface(Service.class.getName(), null)
             .add(m.createServiceDependency().setRequired(true).setService(Service2.class).setCallbacks("bind", null))
         	.add(this);
@@ -112,12 +114,7 @@ public class ScopedServiceTest extends TestBase implements ComponentStateListene
     }
     
     @SuppressWarnings("unused")
-    private ServiceImpl createServiceImpl() { 
-        return new ServiceImpl();
-    }
-    
-    @SuppressWarnings("unused")
-    private ServiceConsumer createServiceConsumer() {
+    public ServiceConsumer createServiceConsumer() {
         return new ServiceConsumer();
     }
     
@@ -135,11 +132,16 @@ public class ScopedServiceTest extends TestBase implements ComponentStateListene
     public interface Service2 { 
     }
         
-    public class ServiceImpl implements Service {
+    public static class ServiceImpl implements Service {
         volatile Bundle m_bundle; // bundle requesting the service
         volatile ServiceRegistration<Service> m_registration; // registration of the requested service
 		volatile Service2 m_service2;
-        
+		
+		public ServiceImpl(Bundle bundle, ServiceRegistration<Service> registration) {
+			m_bundle = bundle;
+			m_registration = registration;
+		}
+		
         void bind(Service2 service2) {
         	m_service2 = service2;
         }

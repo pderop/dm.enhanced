@@ -19,7 +19,6 @@
 package org.apache.felix.dm.runtime.itest.components;
 
 import org.apache.felix.dm.annotation.api.Component;
-import org.apache.felix.dm.annotation.api.Inject;
 import org.apache.felix.dm.annotation.api.ServiceDependency;
 import org.apache.felix.dm.annotation.api.ServiceScope;
 import org.apache.felix.dm.annotation.api.Start;
@@ -42,12 +41,14 @@ public class ScopedServiceAnnotation {
         @ServiceDependency(filter = "(name=" + ENSURE + ")")
         protected volatile Ensure m_sequencer;
         
-        @Inject
-        Bundle m_clientBundle;
-        
-        @Inject
+        Bundle m_clientBundle;        
         ServiceRegistration m_registration;
-
+        
+        public PrototypeServiceImpl(Bundle b, ServiceRegistration sr) {
+        	m_clientBundle = b;
+        	m_registration = sr;
+        }
+        
 		@Start
 		void start() {
         	Assert.assertNotNull(m_clientBundle);

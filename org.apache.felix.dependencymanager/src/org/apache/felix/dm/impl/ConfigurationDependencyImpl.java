@@ -446,8 +446,14 @@ public class ConfigurationDependencyImpl extends AbstractDependency<Configuratio
             boolean callbackFound = false;
             for (int i = 0; i < instances.length; i++) {
                 try {
-                    InvocationUtil.invokeCallbackMethod(instances[i], m_add, callbackInfo.m_sigs, callbackInfo.m_args);
-                    callbackFound |= true;
+                	// Only inject if the component instance is not a prototype instance
+                	if (instances[i] != InvocationUtil.PROTOTYPE_INSTANCE) {
+                		InvocationUtil.invokeCallbackMethod(instances[i], m_add, callbackInfo.m_sigs, callbackInfo.m_args);
+                		callbackFound |= true;
+                	} else {
+                		// No need to scan anymore, we are on a prototype instance which must not be injected
+                		return;
+                	}
                 }
                 catch (NoSuchMethodException e) {
                     // if the method does not exist, ignore it

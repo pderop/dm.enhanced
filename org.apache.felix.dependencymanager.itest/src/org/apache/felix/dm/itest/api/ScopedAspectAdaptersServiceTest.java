@@ -113,7 +113,7 @@ public class ScopedAspectAdaptersServiceTest extends TestBase {
     
     /**
      * Test for a factory configuration adapter: a component is created when its configuration pid is created,
-     * and when two consumers declares a depedendency on the component, then both consumers will get their own instance
+     * and when two consumers declares a dependendency on the component, then both consumers will get their own instance
      * of the component.
      */
     public void testPrototypeFactoryAdapter() {

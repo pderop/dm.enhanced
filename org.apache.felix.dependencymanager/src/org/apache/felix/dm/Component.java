@@ -33,7 +33,7 @@ import org.osgi.framework.ServiceRegistration;
  * @author <a href="mailto:dev@felix.apache.org">Felix Project Team</a>
  */
 @ProviderType
-public interface Component<T extends Component<T>> {
+public interface Component<T extends Component<T>> extends AbstractComponent {
     
 	/**
 	 * Component service scopes
@@ -211,34 +211,6 @@ public interface Component<T extends Component<T>> {
 	public ServiceRegistration getServiceRegistration();
 
     /**
-     * Returns the instance that make up this component. If the component has a composition of instances,
-     * then the first instance of the composition is returned. Null is returned if the component has not 
-     * even been instantiated.
-     * 
-     * @return the component instances
-     */
-	public <U> U getInstance();
-
-    /**
-     * Returns the composition instances that make up this component, or just the
-     * component instance if it does not have a composition, or an empty array if
-     * the component has not even been instantiated.
-     * 
-     * @return the component instances
-     */
-	public Object[] getInstances();
-
-    /**
-     * Returns the component service properties.
-     * The returned dictionary is either empty if no service properties were defined for this component,
-     * or copy of the existing service properties associated with this component.
-     * 
-     * @return a copy of the service properties associated to this component or an empty dictionary 
-     *         if no service properties were defined for this component.
-     */
-	public <K,V> Dictionary<K,V> getServiceProperties();
-
-    /**
      * Sets the service properties associated with the component. If the service
      * was already registered, it will be updated.
      * 
@@ -332,18 +304,6 @@ public interface Component<T extends Component<T>> {
      */
 	public T setComposition(String getMethod);
 
-    /**
-     * Returns the dependency manager associated with this component.
-     * @return the dependency manager associated with this component.
-     */
-	public DependencyManager getDependencyManager();
-
-	/**
-	 * Returns the component description (dependencies, service provided, etc ...).
-	 * @return the component description (dependencies, service provided, etc ...).
-	 */
-	public ComponentDeclaration getComponentDeclaration();
-	
 	/**
 	 * Activate debug for this component. Informations related to dependency processing will be displayed
 	 * using osgi log service, our to standard output if no log service is currently available.

@@ -19,7 +19,7 @@ The following improvements have been done:
 - support for user-defined configuration types (annotations)
 - DM API has been reworked to simplify definition of aspect and adapters.
 - Support for OSGI service scopes
-- The dependency manager is now built using latest release of bndtools 3.5.0 as well as latest bndlib 3.5.0
+- The dependency manager is now built using bndtools 3.5.0 as well as latest bndlib 3.5.0
 
 # Javadocs
 You can find the javadoc for the new annotation API in `./javadocs/annotation`
@@ -327,7 +327,7 @@ so, the new signatures for the updated callbacks are now the following (for both
 
 ## Support for service scopes
 
-sometimes, you want to use OSGI ServiceObjects, which allows to control the scope of registered services, and maybe it would be useful to provide some new simple functionalities in DM with regard to the usage of service objects (to reduce boiler plate code).
+DM knows allow to specify scoped services more easily.
 
 From the provider side, a new "scope" parameter has been added in the Component interface, allowing to define the scope of the registered service, and the parameter will have three enum values: SINGLETON, BUNDLE, PROTOTYPE
 - SINGLETON: it's as before: your registered service is a singleton
@@ -345,9 +345,12 @@ When a consumer requests a service (using ServiceDependency), then DM will autom
 - if the service has a _SERVICE_SCOPE_ service property matching _SCOPE_PROTOTYPE_, the DM will internally derefence the service using the _ServiceObject_ API: so, the consumer will get its own copy of the requested service instance.
 - else, DM will internally dereference the service, as before.
 
+When defining scoped component implementation, you can optionally define two special class fields in order to get injected with the client `Bundle` requesting the service, and the `ServiceRegisgtration` Object. Using the DM API this is enabled by default and you can turn off auto config using `Component.setAutoConfig(Bundle.class, boolean)` method, or `Component.setAutoConfig(ServiceRegistration.class, boolean)` methods. When using annotation, just use @Inject annotations in order to get injected with the client `Bundle` or the `ServiceRegistration`. You can also define a constructor which takes as argument the client bundle as well as the service registration, and in this case auto configuring Bundle/ServiceRegistration in class fields will be disabled. (we will give concrete examples bellow using DM native API and DM annotations).
+
+
 ### Example using annotations
 
-Here is a MyService component with PROTOTYPE scope, each requester will get its own copy of MyService instance (the MyServiceImpl.start() method will be called for each MyServiceImpl instance):
+Here is a MyService component with PROTOTYPE scope, each requester will get its own copy of MyService instance, and the MyServiceImpl.start() method will be called for each instance:
 
 ```java
 import org.apache.felix.dm.annotation.api.Component;
@@ -425,6 +428,26 @@ public static class MyServiceImpl implements MyService {
 	}
 }
 ```
+
+The Bundle and ServiceRegistration can also be injected in the component Constructor:
+
+```java
+import org.apache.felix.dm.annotation.api.Component;
+import org.apache.felix.dm.annotation.api.ServiceScope;
+
+@Component(scope=ServiceScope.PROTOTYPE)
+public static class MyServiceImpl implements MyService {
+   
+   public MyServiceImpl(Bundle clientBundle, ServiceRegistration registration) { 
+      ... 
+   }
+    
+   @Start
+   void start() {
+	   // called on each MyService instance.
+	}
+}
+```
 ### Example using DM API
 This section shows an example usage of scoped services using the DM native API. 
 
@@ -448,7 +471,21 @@ public class MyServiceImpl implements MyService {
     }
 }
 ```
-And here is a Client component which simply depends on the MyService service using a basic DM activator (nothing special to do):
+
+The MyServiceImpl, like with annotations, can define a constructor in order to be injected with the client bundle invoking the service and also the service Registration:
+
+```java
+public class MyServiceImpl implements MyService {
+    public MyServiceImpl(Bundle clientBundle, ServiceRegistration reg) { ... }
+    void start() {
+        // called on each MyService instance
+    }
+}
+```
+
+(if you want to auto configure the client Bundle, and the ServiceRegistration, then simply define class fields, they will be auto injected, unless you disable auto configuraiton for Bundle/ServiceRegistration using Component.setAutoConfig(Class, boolean) methods.
+
+Hre is a Client component which simply depends on the MyService service using a basic DM activator (nothing special to do):
 ```java
 public class Activator extends DependencyActivatorBase {
     @Override
@@ -469,6 +506,7 @@ public class Client {
     }
 }
 ```
+
 #### Example using ServiceObjects API
 
 If now you want to control the creation of the MyService using raw OSGI ServiceObjects API, you can also do it like this:
@@ -484,9 +522,44 @@ public class Client {
 }
 ```
 
-#### Note when using DM ServiceDependency from API and ServiceObjects
+#### Scoped services and init/destroy callbacks.
 
-When using DependencyManager ServiceDependency from the native API, you have to know that the ServiceDependency always internally dereferences and creates the scoped service using ServiceObjects.getService() method, even if you specify a ServiceObjecs parameter in your bind method.
+When you need to specify dynamic dependencies from your component.init() method, the following mechanism will be used:
+
+- first, if your component defines an init callback, then one single component `prototype instance` singleton is created, as it the component is declared with SCOPE=SINGLETON.
+- so, the prototype instance will be invoked in the init callback, but won't be started or stopped
+- and when all dependencies are satisfied (including the dynamic dependencies), then the ServiceFactory (or PrototypeServiceFactory) is registered
+- so, when one client will request a component instance, then a clone will be created, but the clone won't be invoked in the init() method, it will only be called in the start() callback (after having been injected with all dependencies declared in the prototype instance init method).
+
+Example of a scoped component which defines an init method:
+
+```java
+import org.apache.felix.dm.annotation.api.Component;
+import org.apache.felix.dm.annotation.api.ServiceScope;
+
+@Component(scope=ServiceScope.PROTOTYPE)
+public static class MyServiceImpl implements MyService {
+   
+   @Init
+   void init(Component comp) {
+        // add dependencies dynamically: take care this method is only invoked on the prototype instance, not on clones
+   }
+
+    @Start
+	void start() {
+	   // called on each clone, not on the prototype instance singleton
+	}
+	
+	@Stop
+	void stop() {
+	   // called on each clone, not on the prototype instance singleton
+	}
+}
+```
+
+#### Limitation when using DM ServiceDependency from API and ServiceObjects
+
+When using DependencyManager ServiceDependency from the `native API` (not using annotations), you have to know that the ServiceDependency always internally dereferences and creates the scoped service using ServiceObjects.getService() method, even if you specify a ServiceObjecs parameter in your bind method.
 If now you really want to disable the auto-deref ServiceDependency (because you want to directly use the ServiceObjects API), you must then use the "setDereference(false") method on your ServiceDependency: in this way, you tell DM to never dereference internally the scoped service. Here is an example:
 
 ```java
@@ -518,6 +591,7 @@ In the future, I will try to auto detect the signatures of the Client.bind metho
 # Bug fixed
 
 - fixed a nasty deadlock when using latest DM r11 and latest SCR 2.0.12 in the same JVM (see FELIX-5716)
+- The DM core bundle is now importing org.osgi.framework with version range "[1.8, 2)"
 
 # TODO
 

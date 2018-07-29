@@ -25,7 +25,7 @@ import org.apache.felix.dm.annotation.api.Component;
 /**
  * @author <a href="mailto:dev@felix.apache.org">Felix Project Team</a>
  */
-@Component(factoryPid = "device.parameter")
+@Component(factoryPid = "device.parameter", propagate=true)
 public class DeviceParameterImpl implements DeviceParameter {
     int id;
 
