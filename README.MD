@@ -84,13 +84,13 @@ You can also define multiple property type annotations, and possibly single valu
 ```java
  @PropertyType
  @interface ContextName { // will map to "osgi.http.whiteboard.context.name" property name
-     String PREFIX="osgi.http.whiteboard.";
+     String PREFIX_="osgi.http.whiteboard.";
      String value();
  }
  
  @PropertyType
  @interface ContextPath { // will map to "osgi.http.whiteboard.context.path" property name
-     String PREFIX="osgi.http.whiteboard.";
+     String PREFIX_="osgi.http.whiteboard.";
      String value();
  }
  
@@ -134,7 +134,7 @@ will be registered with "osgi.jaxrs.resource" service property with Boolean.TRUE
 ```java
  @PropertyType
  @interface JaxrsResource { // will map to "osgi.jaxrs.resource" property name
-     String PREFIX="osgi.";
+     String PREFIX_="osgi.";
  }
  
  @Component(provides = MyResource.class)
