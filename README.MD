@@ -365,7 +365,7 @@ public class MyServiceImpl implements MyService {
 }
 ```
 
-The above service will then automatically instantiated for each service requester:
+The above service will then automatically be instantiated for each service requester:
 ```java
 import org.apache.felix.dm.annotation.api.Component;
 import org.apache.felix.dm.annotation.api.ServiceScope;
