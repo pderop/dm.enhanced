@@ -327,7 +327,7 @@ so, the new signatures for the updated callbacks are now the following (for both
 
 ## Support for service scopes
 
-DM knows allow to specify scoped services more easily.
+DM now allows to specify scoped services more easily.
 
 From the provider side, a new "scope" parameter has been added in the Component interface, allowing to define the scope of the registered service, and the parameter will have three enum values: SINGLETON, BUNDLE, PROTOTYPE
 - SINGLETON: it's as before: your registered service is a singleton
