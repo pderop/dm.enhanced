@@ -46,11 +46,11 @@ public class DynamicScopedServiceTest extends TestBase {
     public void setUp() throws Exception {
     	super.setUp();
     	m_e = new Ensure();
-    	m_serviceImplInitSteps = new Ensure.Steps(1, 10);
-    	m_serviceImplStartSteps = new Ensure.Steps(2, 4, 11);
-    	m_serviceImplStopSteps = new Ensure.Steps(7, 9, 14);
-    	m_serviceConsumerBindSteps = new Ensure.Steps(3, 5, 12);
-    	m_serviceConsumerUnbindSteps = new Ensure.Steps(6, 8, 13);
+    	m_serviceImplInitSteps = new Ensure.Steps(1, 2, 5, 12, 13);
+    	m_serviceImplStartSteps = new Ensure.Steps(3, 6, 14);
+    	m_serviceImplStopSteps = new Ensure.Steps(9, 11, 17);
+    	m_serviceConsumerBindSteps = new Ensure.Steps(4, 7, 15);
+    	m_serviceConsumerUnbindSteps = new Ensure.Steps(8, 10, 16);
     }
     
     public void testPrototypeComponentWithFactory() {
@@ -98,12 +98,14 @@ public class DynamicScopedServiceTest extends TestBase {
         m.add(service2); // add service2 (the prototype depends on it)
         m.add(consumer1); // add first consumer
         m_e.waitForStep(1, 5000); // Service prototype instance called in init
-        m_e.waitForStep(2, 5000); // first clone called in start
-        m_e.waitForStep(3, 5000); // first consumer bound with the first clone
+        m_e.waitForStep(2, 5000); // first clone called in init
+        m_e.waitForStep(3, 5000); // first clone called in init
+        m_e.waitForStep(4, 5000); // first consumer bound to first clone
 
         m.add(consumer2); // add second consumer
-        m_e.waitForStep(4, 5000); // second clone called in start
-        m_e.waitForStep(5, 5000); // second consumer bound with the second clone
+        m_e.waitForStep(5, 5000); // second clone called in init
+        m_e.waitForStep(6, 5000); // second clone called in start
+        m_e.waitForStep(7, 5000); // second consumer bound to second clone
 
         // make sure both consumers have a different provider instances.
         ServiceConsumer consumer1Impl = consumer1.getInstance();
@@ -113,21 +115,22 @@ public class DynamicScopedServiceTest extends TestBase {
         Assert.assertNotEquals(consumer1Impl.getService(), consumer2Impl.getService());
         
         m.remove(consumer1); // remove consumer1
-        m_e.waitForStep(6, 5000); // consumer1 unbound from first clone
-        m_e.waitForStep(7, 5000); // first clone stopped
+        m_e.waitForStep(8, 5000); // consumer1 unbound from first clone
+        m_e.waitForStep(9, 5000); // first clone stopped
         
         m.remove(provider); // unregister the provider
-        m_e.waitForStep(8, 5000); // consumer2 unbound from second clone
-        m_e.waitForStep(9, 5000); // second clone stopped
+        m_e.waitForStep(10, 5000); // consumer2 unbound from second clone
+        m_e.waitForStep(11, 5000); // second clone stopped
         
         m.add(provider); // re-register the provider
-        m_e.waitForStep(10, 5000); // prototype init called
-        m_e.waitForStep(11, 5000); // clone start method called (because consumer2 is active)  
-        m_e.waitForStep(12, 5000); // consumer2 bind method called
+        m_e.waitForStep(12, 5000); // prototype init called
+        m_e.waitForStep(13, 5000); // third clone init method called (because consumer2 is active)  
+        m_e.waitForStep(14, 5000); // third clone start method called
+        m_e.waitForStep(15, 5000); // consumer2 bound to third clone
         
         m.remove(service2); // remove the service2 (it will destroy the clone)
-        m_e.waitForStep(13, 5000); // consumer2 unbound
-        m_e.waitForStep(14, 5000); // third clone stopped
+        m_e.waitForStep(16, 5000); // consumer2 unbound
+        m_e.waitForStep(17, 5000); // third clone stopped
         
         m.remove(provider);    
         m.remove(service3);

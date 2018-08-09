@@ -73,6 +73,11 @@ public abstract class FilterComponent<T extends Component<T>> implements Compone
     }
     
     @Override
+    public boolean injectionDisabled() {
+    	return m_component.injectionDisabled();
+    }
+    
+    @Override
     public <U> U createConfigurationType(Class<U> type, Dictionary<?, ?> config) {
         return m_component.createConfigurationType(type, config);
     }

@@ -18,7 +18,10 @@
  */
 package org.apache.felix.dm.runtime.itest.components;
 
+import java.util.Map;
+
 import org.apache.felix.dm.annotation.api.Component;
+import org.apache.felix.dm.annotation.api.PropertyType;
 import org.apache.felix.dm.annotation.api.ServiceDependency;
 import org.apache.felix.dm.annotation.api.ServiceScope;
 import org.apache.felix.dm.annotation.api.Start;
@@ -36,7 +39,13 @@ public class ScopedServiceAnnotation {
 	public interface PrototypeService {
 	}
 	
+	@PropertyType
+	public @interface MyConf {
+		public String foo() default "bar";
+	}
+	
 	@Component(scope=ServiceScope.PROTOTYPE)
+	@MyConf(foo="bar2")
 	public static class PrototypeServiceImpl implements PrototypeService {
         @ServiceDependency(filter = "(name=" + ENSURE + ")")
         protected volatile Ensure m_sequencer;
@@ -64,7 +73,6 @@ public class ScopedServiceAnnotation {
 		
 	@Component
 	public static class Consumer {	
-		
         @ServiceDependency(filter = "(name=" + ENSURE + ")")
         protected volatile Ensure m_sequencer;
 
@@ -73,8 +81,9 @@ public class ScopedServiceAnnotation {
 		private PrototypeService m_service2;
 		
 		@ServiceDependency
-		void bind(PrototypeService service) {	
+		void bind(PrototypeService service, Map<String, Object> props) {	
 			m_service1 = service;
+        	Assert.assertEquals("bar2", props.get("foo"));
 		}
 
 		@ServiceDependency

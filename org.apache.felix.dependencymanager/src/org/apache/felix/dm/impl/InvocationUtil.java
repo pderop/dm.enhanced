@@ -45,11 +45,6 @@ public class InvocationUtil {
 	 */
     private static final Class<?>[] VOID = new Class[] {};
     
-	/**
-	 * Prototype instance used when a component scope is not a singleton when when no init callback is defined.
-	 */
-    final static Object PROTOTYPE_INSTANCE = new Object();
-    
     private static final Map<Key, Method> m_methodCache;
     static {
         int size = 4096;

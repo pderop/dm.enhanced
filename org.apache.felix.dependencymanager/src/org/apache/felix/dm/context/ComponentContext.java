@@ -194,4 +194,9 @@ public interface ComponentContext<T extends Component<T>> extends Component<T> {
      * @return this component context.
      */   
     public ComponentContext instantiateComponent();
+    
+    /**
+     * Indicates if the component fields and methods injections are disabled.
+     */
+    public boolean injectionDisabled();
 }

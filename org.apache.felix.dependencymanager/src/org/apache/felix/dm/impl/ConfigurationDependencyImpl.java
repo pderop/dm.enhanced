@@ -436,7 +436,7 @@ public class ConfigurationDependencyImpl extends AbstractDependency<Configuratio
             // adapter.
             
             Object mainComponentInstance = m_component.getInstance();
-            if (mainComponentInstance instanceof AbstractDecorator) {
+            if (mainComponentInstance instanceof AbstractDecorator || m_component.injectionDisabled()) {
                 return;
             }
             
@@ -447,13 +447,8 @@ public class ConfigurationDependencyImpl extends AbstractDependency<Configuratio
             for (int i = 0; i < instances.length; i++) {
                 try {
                 	// Only inject if the component instance is not a prototype instance
-                	if (instances[i] != InvocationUtil.PROTOTYPE_INSTANCE) {
-                		InvocationUtil.invokeCallbackMethod(instances[i], m_add, callbackInfo.m_sigs, callbackInfo.m_args);
-                		callbackFound |= true;
-                	} else {
-                		// No need to scan anymore, we are on a prototype instance which must not be injected
-                		return;
-                	}
+                	InvocationUtil.invokeCallbackMethod(instances[i], m_add, callbackInfo.m_sigs, callbackInfo.m_args);
+                	callbackFound |= true;
                 }
                 catch (NoSuchMethodException e) {
                     // if the method does not exist, ignore it

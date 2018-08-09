@@ -298,6 +298,16 @@ public class ComponentImpl implements Component<ComponentImpl>, ComponentContext
      * Component service scope.
      */
 	private volatile ServiceScope m_scope = Component.ServiceScope.SINGLETON;
+	
+	/**
+	 * Indicates if injection of methods or class fields is disabled for this component.
+	 */
+	private volatile boolean m_injectionDisabled;
+	
+	/**
+	 * Prototype instance used when a component scope is not a singleton when when no init callback is defined.
+	 */
+    private final static Object PROTOTYPE_INSTANCE = new Object();
 
     /**
      * Default component declaration implementation.
@@ -347,8 +357,9 @@ public class ComponentImpl implements Component<ComponentImpl>, ComponentContext
         	clone.setThreadPool(m_executor);
         	clone.setAutoConfig(ServiceRegistration.class, false); // don't inject the ServiceRegistration for the moment
         	configureAutoConfigState(clone, ComponentImpl.this);
-        	copyDependencies(getDependencies(), clone);   
-        	clone.setCallbacks(null, m_callbackStart, m_callbackStop, null); // don't invoke init/destroy callbacks on clones (we already have called ini on the prototype instance)
+        	// copy prototype dependencies, except instance bound dependencies
+        	getDependencies().stream().filter(dc -> ! dc.isInstanceBound()).map(dc -> dc.createCopy()).forEach(clone::add);
+        	clone.setCallbacks(m_callbackInit, m_callbackStart, m_callbackStop, m_callbackDestroy); 
         	m_listeners.forEach(clone::add);        	        	                    	
         	int ctorIndex = clone.instantiateComponent(createScopedComponentConstructorArgs(bundle, registration));  
         	// ctorIndex == -1 means we have used a factory to create the component
@@ -493,23 +504,6 @@ public class ComponentImpl implements Component<ComponentImpl>, ComponentContext
 	    }
 	}
 	
-	private void checkParamsConsistency() {
-		switch (m_scope) {
-		case PROTOTYPE:
-		case BUNDLE:
-			if (m_serviceName == null) {
-				throw new IllegalStateException("No service interface specified for scoped service");
-			}
-
-			if ((!(m_componentDefinition instanceof Class)) && m_instanceFactoryCreateMethod == null) {
-				throw new IllegalStateException(
-						"The component instance must be created using either a class or a factory object when scope is not singleton.");
-			}
-
-		}
-		
-	}
-
 	@Override
 	public void stop() {           
 	    if (m_active.compareAndSet(true, false)) {
@@ -838,6 +832,11 @@ public class ComponentImpl implements Component<ComponentImpl>, ComponentContext
         return m_manager;
     }
     
+	@Override
+	public boolean injectionDisabled() {
+		return m_injectionDisabled;
+	}
+	
     public ComponentDependencyDeclaration[] getComponentDependencies() {
         List<DependencyContext> deps = getDependencies();
         if (deps != null) {
@@ -896,6 +895,23 @@ public class ComponentImpl implements Component<ComponentImpl>, ComponentContext
 	    return m_scope;
 	}
 	
+	private void checkParamsConsistency() {
+		switch (m_scope) {
+		case PROTOTYPE:
+		case BUNDLE:
+			if (m_serviceName == null) {
+				throw new IllegalStateException("No service interface specified for scoped service");
+			}
+
+			if ((!(m_componentDefinition instanceof Class)) && m_instanceFactoryCreateMethod == null) {
+				throw new IllegalStateException(
+						"The component instance must be created using either a class or a factory object when scope is not singleton.");
+			}
+
+		}
+		
+	}
+
     private void generateNameBasedOnServiceAndProperties() {
     	StringBuilder sb = new StringBuilder();
         Object serviceName = m_serviceName;
@@ -1038,7 +1054,8 @@ public class ComponentImpl implements Component<ComponentImpl>, ComponentContext
     		// for scoped components, If no init callback is defined, we don't instantiate the prototype instance with the real component class, 
     		// we use a dymmy prototype instance object because there is no need to instantiate the real component prototype object (since there is no init method to invoke).
 			if (m_callbackInit == null) {
-				m_componentInstance = InvocationUtil.PROTOTYPE_INSTANCE;
+				m_componentInstance = PROTOTYPE_INSTANCE;
+				m_injectionDisabled = true;
 				return this;
 			}
 			
@@ -1512,10 +1529,7 @@ public class ComponentImpl implements Component<ComponentImpl>, ComponentContext
      */
     private void updateInstance(DependencyContext dc, Event event, boolean update, boolean add) {
         if (dc.isAutoConfig()) {
-        	// don't inject anything if the component instance is a hidden prototype instance
-        	if (m_componentInstance != InvocationUtil.PROTOTYPE_INSTANCE) {
-        		updateImplementation(dc.getAutoConfigType(), dc, dc.getAutoConfigName(), event, update, add);
-        	}
+        	updateImplementation(dc.getAutoConfigType(), dc, dc.getAutoConfigName(), event, update, add);
         }
         if (dc.isPropagated() && m_registration != null) {
             m_registration.setProperties(calculateServiceProperties());
@@ -1721,7 +1735,7 @@ public class ComponentImpl implements Component<ComponentImpl>, ComponentContext
 	 */
 	private void invokeCallback(DependencyContext dc, EventType type, Event event) {
     	// don't inject anything if the component instance is a hidden prototype instance
-    	if (m_componentInstance == InvocationUtil.PROTOTYPE_INSTANCE) {
+    	if (m_injectionDisabled) {
     		return;
     	}
     	
@@ -1831,7 +1845,7 @@ public class ComponentImpl implements Component<ComponentImpl>, ComponentContext
      */
     void configureImplementation(Class<?> clazz, Object instance, String fieldName) {
     	// don't inject anything if the component instance is a hidden prototype instance
-    	if (m_componentInstance == InvocationUtil.PROTOTYPE_INSTANCE) {
+    	if (m_injectionDisabled) {
     		return;
     	}
 
@@ -1848,7 +1862,7 @@ public class ComponentImpl implements Component<ComponentImpl>, ComponentContext
 
     private void configureImplementation(Class<?> clazz, DependencyContext dc, String fieldName) {
     	// don't inject anything if the component instance is a hidden prototype instance
-    	if (m_componentInstance == InvocationUtil.PROTOTYPE_INSTANCE) {
+    	if (m_injectionDisabled) {
     		return;
     	}
 
@@ -1876,8 +1890,10 @@ public class ComponentImpl implements Component<ComponentImpl>, ComponentContext
      *        ignored if the "update" flag is true (because the dependency properties are just being updated).
      */
     private void updateImplementation(Class<?> clazz, DependencyContext dc, String fieldName, Event event, boolean update, boolean add) {
-        Object[] targets = getInstances();
-        FieldUtil.updateDependencyField(targets, fieldName, update, add, clazz, event, dc, m_logger);
+    	if (! m_injectionDisabled) {
+    		Object[] targets = getInstances();
+    		FieldUtil.updateDependencyField(targets, fieldName, update, add, clazz, event, dc, m_logger);
+    	}
     }
 
 	private Object[] getCompositionInstances() {
@@ -1956,11 +1972,4 @@ public class ComponentImpl implements Component<ComponentImpl>, ComponentContext
         }
     }    
     
-    private void copyDependencies(List<DependencyContext> dependencies, Component component) {
-        for (DependencyContext dc : dependencies) {
-            DependencyContext copy = dc.createCopy();
-            component.add(copy);
-        }
-    }
-
 }
