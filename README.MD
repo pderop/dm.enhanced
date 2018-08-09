@@ -329,7 +329,7 @@ so, the new signatures for the updated callbacks are now the following (for both
 
 DM now allows to specify scoped services more easily.
 
-From the provider side, a new "scope" parameter has been added in the Component interface, allowing to define the scope of the registered service, and the parameter will have three enum values: SINGLETON, BUNDLE, PROTOTYPE
+From the provider side, a new "scope" parameter has been added in the Component interface, allowing to define the scope of the registered service, and the parameter has three enum values: SINGLETON, BUNDLE, PROTOTYPE
 - SINGLETON: it's as before: your registered service is a singleton
 - BUNDLE: the service will be registered as a _ServiceFactory_
 - PROTOTYPE: the service will be registered as a _PrototypeServiceFactory_
@@ -526,10 +526,10 @@ public class Client {
 
 When you need to specify dynamic dependencies from your component.init() method, the following mechanism will be used:
 
-- first, if your component defines an init callback, then one single component `prototype instance` singleton is created, as it the component is declared with SCOPE=SINGLETON.
+- first, if your component defines an init callback, then one single component `prototype instance` singleton is created, as if the component is declared with SCOPE=SINGLETON.
 - so, the prototype instance will be invoked in the init callback, but won't be started or stopped
 - and when all dependencies are satisfied (including the dynamic dependencies), then the ServiceFactory (or PrototypeServiceFactory) is registered
-- so, when one client will request a component instance, then a clone will be created, but the clone won't be invoked in the init() method, it will only be called in the start() callback (after having been injected with all dependencies declared in the prototype instance init method).
+- when one client will request a component instance, then a clone will be created.
 
 Example of a scoped component which defines an init method:
 
@@ -542,12 +542,12 @@ public static class MyServiceImpl implements MyService {
    
    @Init
    void init(Component comp) {
-        // add dependencies dynamically: take care this method is only invoked on the prototype instance, not on clones
+        // add dependencies dynamically
    }
 
     @Start
 	void start() {
-	   // called on each clone, not on the prototype instance singleton
+	   // only called on clones, not on the prototype instance
 	}
 	
 	@Stop
