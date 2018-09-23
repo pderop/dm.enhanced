@@ -95,23 +95,17 @@ task makeStaging {
 		zipfileset(dir: '../cnf', prefix: topdir+"-src/cnf", includes: ".project,.classpath,src/**,*.bnd,*.mvn,ext/**")
 		zipfileset(dir: '..', prefix: topdir+"-src", includes: '*.gradle,*.properties')
 		zipfileset(dir: 'resources/src', prefix: topdir+"-src", includes: '*')
+		ant.zipfileset(dir: '..', prefix: topdir+"-src", includes: 'gradlew')
+    		ant.zipfileset(dir: '../.gradle-wrapper', prefix: topdir+"-src/.gradle-wrapper", includes: 'gradle-wrapper.properties')
 		new File('.').eachFile { 
-	    	if(new File(it, 'bnd.bnd').exists()) {	    		
+	    	    if(new File(it, 'bnd.bnd').exists()) {	    		
     			def bndProject = workspace.getProject(it.name)
     			if (! bndProject.isNoBundles() && ! bndProject.getName().endsWith(".benchmark")) {
-    		    	zipfileset(dir: "../${bndProject.name}", prefix: topdir+"-src/${bndProject.name}",
-    			       		   includes: "*.gradle,.project,.classpath,.settings/**,src/**,test/**,*.bnd,*.bndrun,run-*/conf/**,resources/**,README*")
+    		    	    zipfileset(dir: "../${bndProject.name}", prefix: topdir+"-src/${bndProject.name}",
+    			    	       includes: "*.gradle,.project,.classpath,.settings/**,src/**,test/**,*.bnd,*.bndrun,run-*/conf/**,resources/**,README*")
     			}
-	   		}
+	   	    }
 		}
-    }
-
-    // Package binary dependencies, needed to build the source distributions.
-    logger.lifecycle("    Packaging binary dependencies.")    
-    ant.zip(destfile: "staging/"+topdir+"-deps.zip") {
-    	ant.zipfileset(dir: '..', prefix: topdir+"-src", includes: 'gradlew')
-    	ant.zipfileset(dir: '../.gradle-wrapper', prefix: topdir+"-src/.gradle-wrapper", includes: '**')
-		ant.zipfileset(dir: 'resources/deps', prefix: topdir+"-src", includes: '*')
     }
 
     // Package binaries as a simple collection of bundles. We use same license files as for src distrib.
@@ -129,7 +123,7 @@ task makeStaging {
     }
 
     // Before adding all latest released bundles in the binary distribution, check if they contain proper license files.
-	logger.lifecycle("    Checking META-INF mandatory files.")
+    logger.lifecycle("    Checking META-INF mandatory files.")
     released.each { jarfile -> 
     	if (jarfile.isFile()) {
        		new ByteArrayOutputStream().withStream { os ->
@@ -173,34 +167,49 @@ task makeStaging {
     }
 }
 
-// Sign staging directory 
+
+ 
+
+// Sign staging directory (you must use "--no-daemon" gradle option)
 task signStaging {
   doLast {
-    description = 'Signs the local staging distribution.'
+    	ant.input(message: 'Enter PGP password:', addproperty: 'pass')
+
+        description = 'Signs the local staging distribution.'
 	fileTree("staging").visit { FileVisitDetails details -> 
 		logger.lifecycle("    Signing " + details.file.path)
-		ant.exec(executable: 'gpg', dir: 'staging') { 
-	    	ant.arg(line: '--armor')
-	    	ant.arg(line: '--output')
-	    	ant.arg(line: details.file.name + ".asc")
-	    	ant.arg(line: "--detach-sig")
-	    	ant.arg(line: details.file.name)
+		ant.exec(executable: 'gpg', dir: 'staging') {
+			ant.arg(line: '--batch')
+			ant.arg(line: '--passphrase')
+			ant.arg(line: ant.properties.pass)
+	    		ant.arg(line: '--armor')
+	    		ant.arg(line: '--output')
+	    		ant.arg(line: details.file.name + ".asc")
+	    		ant.arg(line: "--detach-sig")
+	    		ant.arg(line: details.file.name)
 		}
 
 		ant.exec(executable: 'gpg', dir: 'staging', output: "staging/" + details.file.name + ".md5") { 
-	    	ant.arg(line: '--print-md')
-	    	ant.arg(line: 'MD5')
-	    	ant.arg(line: details.file.name)
+	    		ant.arg(line: '--print-md')
+	    		ant.arg(line: 'MD5')
+	    		ant.arg(line: details.file.name)
 		}
 
-		ant.exec(executable: 'gpg', dir: 'staging', output: "staging/" + details.file.name + ".sha") {
-	    	ant.arg(line: '--print-md')
-	    	ant.arg(line: 'SHA512')
-	    	ant.arg(line: details.file.name)
+		ant.exec(executable: 'gpg', dir: 'staging', output: "staging/" + details.file.name + ".sha1") {
+	    		ant.arg(line: '--print-md')
+	    		ant.arg(line: 'SHA1')
+	    		ant.arg(line: details.file.name)
 		}
+
+		ant.exec(executable: 'gpg', dir: 'staging', output: "staging/" + details.file.name + ".sha512") {
+	    		ant.arg(line: '--print-md')
+	    		ant.arg(line: 'SHA512')
+	    		ant.arg(line: details.file.name)
+		}
+	}
     }
-  }
 }
+
 
 
 // Moves the source and binary distributions to staging.
