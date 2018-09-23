@@ -3,9 +3,11 @@ This project contains some fixes and enhancements done on the Apache Felix Depen
 It also provides a TODO section which need to be addressed before doing the release.
 
 # How to build and test
-if you are using a corporate http proxy, export the following variable:
+if you are using a corporate http proxy, export the following variables:
 ```sh
 $ export GRADLE_OPTS="-Dhttp.proxyHost=<your proxy ip> -Dhttp.proxyPort=<your proxy port> -Dhttps.proxyHost=<your proxy ip> -Dhttps.proxyPort=<your proxy port>"
+$ export http_proxy="-Dhttp.proxyHost=<your http proxy ip>:<your http proxy port>
+$ export https_proxy="-Dhttp.proxyHost=<your https proxy ip>:<your https proxy port>
 ```
 then type:
 ```sh
@@ -20,10 +22,9 @@ The following improvements have been done:
 - DM API has been reworked to simplify definition of aspect and adapters.
 - Support for OSGI service scopes
 - The dependency manager is now built using bndtools 3.5.0 as well as latest bndlib 3.5.0
-
-# Javadocs
-You can find the javadoc for the new annotation API in `./javadocs/annotation`
-and the enhanced (compatible) api in `./javadocs/api`
+- dependencymanager-deps is not used anymore (all required build time binary dependencies are now downloaded from maven central, and the gradle wrapper jar is also downloaded from the gradlew script)
+- fixed issues when signing candidate release (the PGP key can be now be inteactively entered when running the gradlew signStaging task)
+- released artifacts are also signed with SHA1
 
 ## Annotations enhancements
 Essentially, the following enhancements and modifications have been done:
