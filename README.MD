@@ -6,8 +6,8 @@ It also provides a TODO section which need to be addressed before doing the rele
 if you are using a corporate http proxy, export the following variables:
 ```sh
 $ export GRADLE_OPTS="-Dhttp.proxyHost=<your proxy ip> -Dhttp.proxyPort=<your proxy port> -Dhttps.proxyHost=<your proxy ip> -Dhttps.proxyPort=<your proxy port>"
-$ export http_proxy="-Dhttp.proxyHost=<your http proxy ip>:<your http proxy port>
-$ export https_proxy="-Dhttp.proxyHost=<your https proxy ip>:<your https proxy port>
+$ export http_proxy="<your proxy ip>:<your proxy port>
+$ export https_proxy="<your proxy ip>:<your proxy port>
 ```
 then type:
 ```sh
